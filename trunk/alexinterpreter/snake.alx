@@ -1,0 +1,163 @@
+
+var rect_len = 10;
+var window_w = 50;
+var window_h = 54;
+
+var snake = [[0,0], [0,1], [0,2], [0,3], [0,4]];
+var dir = 0;			# 0 向下 1 向上 2 向左 3 向右
+var food = [0, 0];
+var get_food_flag = 1;			# 生成食物标识
+
+function main()
+{	
+	# 生成窗口函数， 注册 c_event 创建回调函数 
+	 var w_m = create_window("snake", 20, 20, window_w*rect_len, window_h*rect_len, c_event);	
+
+
+}
+
+
+function c_event(var w_m)
+{
+	reg_pen(w_m, draw_pen, 0);
+	reg_key(w_m, key_event);
+}
+
+
+# snake前进func
+function next_snake()
+{
+	var i=0;
+	var ls = len(snake);
+	var temp;
+	
+	while(i< (ls-1) )
+	{
+		snake[i] = snake[i+1];
+		i++;
+	}
+	
+	temp = snake[ls-1];
+	snake[ls-1] = [temp[0], temp[1]];
+	temp = snake[ls-1];
+	
+	if(dir == 0)
+	{
+		temp[1] = temp[1] +1;
+	}
+	
+	if(dir == 1)
+	{
+		temp[1] = temp[1] -1;
+	}
+	
+	if(dir == 2)
+	{
+		temp[0] = temp[0] - 1;
+	}
+	
+	if(dir == 3)
+	{
+		temp[0] = temp[0] + 1;
+	}
+}
+
+ 
+# 绘制事件函数
+function	draw_pen(var w_m, var hdc)
+{
+		var i=0;
+		var al; 
+		var x,y;
+		while(i<len(snake))
+		{
+			al = snake[i];
+			x = al[0]*10;
+			y = al[1]*10;
+			rectangle(hdc, x, y, x+rect_len, y+rect_len);
+			print("x="+x, " y="+y, "\n");
+			i++;
+		}
+	
+#	 	get_food(hdc);
+		is_eat_food(hdc);
+		
+	 rectangle(hdc,food[0]*rect_len, food[1]*rect_len, food[0]*rect_len+rect_len, food[1]*rect_len+rect_len);
+	 next_snake();
+	 al = snake[len(snake)-1];
+	 print("snake head: ", al);
+	 if(al[0]>=0 && al[0]<50 && al[1] >=0 && al[1] < 50)
+	 {		
+	 		reg_pen(w_m, draw_pen, 100);
+	 }
+}
+
+# 判断是否吃到了food
+function is_eat_food()
+{
+	var temp = snake[len(snake)-1]; 
+	if(get_food_flag)
+	{
+		get_food();
+		return;
+	}
+	else
+	{
+		if(temp[0] == food[0] && temp[1] == food[1])
+		{
+			print( "eat it!\n");
+			add(snake, [food[0], food[1]]);
+			get_food();
+		}
+	}
+}
+
+
+# 生成食物
+function get_food()
+{	
+	food[0] =rand(0, 49);
+	food[1] = rand(0, 49);
+	
+	
+	get_food_flag = 0;
+	print("find food: ", food, "\n");
+}
+
+
+
+# key 事件回调函数
+function  key_event(var  key)
+{
+	var i= 0;
+	var t_s;
+	print("key = "+key, "\n");
+	
+	if(key == 37 && dir != 3)			#left
+	{
+		dir = 2;
+		print("press left!\n");
+	}
+	
+	if(key == 39 && dir != 2)		# right
+	{
+		dir = 3;
+		print("press right!\n");
+	}
+	
+	if(key == 40 && dir != 1)		# down
+	{
+		dir = 0;
+		print("press down!\n");
+	}
+	
+	if(key == 38 && dir != 0)		# up
+	{
+		dir = 1;
+		print("press up!\n");
+	}
+}
+
+
+#程序入口处
+main();
