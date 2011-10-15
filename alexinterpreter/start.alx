@@ -1,0 +1,36 @@
+# ALEX test code
+
+function rect(var len)
+{
+	var i=0, j=0, k=0;
+	var str = "";
+
+	while(j<len)
+	{
+		str = "";
+		i=0;
+		k=0;
+		
+		while(k<(len-j)/2)
+		{
+			str = str +" ";
+			k++;
+		}
+		
+		while(i<j)
+		{
+			str = str + "*";
+			i++;
+		}
+		print(str+"\n");
+		j++;
+	}
+}
+
+
+
+# ÏÔÊ¾Èý½Ç*
+rect(10);
+
+
+
