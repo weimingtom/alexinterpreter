@@ -248,6 +248,7 @@ ret_node* inter_al(inter_env env, tree_node* t_n)
 	
 	n_tn = t_n->childs_p[0]->next;
 	r_v_p = get_al((at_al->s_v.al), (int)(rt_n->ret_value.r_v.num));
+	free_ret(rt_n);
 
 	do{
 		if(r_v_p== NULL || r_v_p->r_t!= sym_type_al || n_tn == NULL)
@@ -258,9 +259,11 @@ ret_node* inter_al(inter_env env, tree_node* t_n)
 			if(rt_n == NULL || check_ret(rt_n, sym_type_num)==0)
 			{
 				print("inter[error line: %d] the al index is error!\n", t_n->line);
+				free_ret(rt_n);
 				return NULL;
 			}
 			r_v_p = get_al(r_v_p->r_v.al, (int)(rt_n->ret_value.r_v.num));
+			free_ret(rt_n);
 		}
 		else
 		{
@@ -886,6 +889,7 @@ ret_node* inter_op_ass(inter_env env, tree_node* t_n)
 				*((r_value*)(l_rt->ret_value.r_v.ptr)) = rt_n->ret_value;
 				break;
 			}
+			free_ret(l_rt);
 		}
 		break;
 	default:
@@ -1135,16 +1139,19 @@ ret_node* inter_while(inter_env env, tree_node* t_n)
 				goto WHILE_END;
 			case ret_continue:
 			case ret_normal:
-				free_ret(rt_n);
 				rt_n = NULL;
 				break;
 			}
 		}
+		free_ret(rt_n);
+		rt_n = NULL;
 		free_ret(while_rt_n);
 		while_rt_n = NULL;
 	}
 
 WHILE_END:
+	free_ret(while_rt_n);
+	while_rt_n = NULL;
 	return rt_n;
 }
 

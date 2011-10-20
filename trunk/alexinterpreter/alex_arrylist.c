@@ -43,17 +43,9 @@ alex_al* new_al()
 
 r_value* get_al(alex_al* al, int inx)
 {
-	r_value t_v = {0};
-	int i=0;
-	int size= sizeof(r_value);
 	if(al==NULL || al->al_len < inx || inx <0 )
 		return NULL;
 	
-	for(i=0; i<al->al_len; i++)
-	{
-		t_v = (al->al_v)[i];
-	}
-
 	return &((al->al_v)[inx]);
 }
 
