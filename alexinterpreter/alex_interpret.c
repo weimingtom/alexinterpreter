@@ -635,6 +635,9 @@ ret_node* inter_op_op(inter_env env, tree_node* t_n, byte t_t)
 		break;
 	}
 
+	free_ret(l_rt);
+	free_ret(r_rt);
+
 	return rt_n;
 }
 
