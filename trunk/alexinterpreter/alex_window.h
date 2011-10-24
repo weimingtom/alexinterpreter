@@ -18,5 +18,6 @@ ret_node* alex_rectangle(ret_node* arg_list);
 int alex_window(ret_node* arg_list);
 ret_node* alex_reg_pen(ret_node* arg_list);
 ret_node* alex_reg_key(ret_node* arg_list);
+ret_node* alex_t_time(ret_node* arg_list);
 
 #endif
