@@ -29,6 +29,8 @@ typedef void*			ALEX_P;
 #define  a_print	   printf	
 
 
+typedef unsigned char ubyte;
+
 long fsize( FILE *fp);			// 获得当前文件大小
 code_buff get_code_buff(long  code_size);
 void free_code_buff();

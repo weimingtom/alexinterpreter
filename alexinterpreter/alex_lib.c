@@ -156,8 +156,8 @@ void alex_reg_lib(sym_table* g_t)
 	reg_lib(g_t, "rectangle", alex_rectangle);
 	reg_lib(g_t, "rand", alex_rand);
 	reg_lib(g_t, "len", alex_len);
-
-}
+	reg_lib(g_t, "t_time", alex_t_time);
+}	
 
 
 char* _pop_ret_str(ret_node** arg_list)
