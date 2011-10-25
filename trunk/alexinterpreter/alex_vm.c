@@ -83,13 +83,13 @@ d_data* relloc_data(d_data* d_d, int d_len)
 }
 
 
-void push_inst(vm_env* vm_p, alex_inst a_i)
+void push_inst(c_inst* code_ptr, alex_inst a_i)
 {
-	if(vm_p==NULL)
+	if(code_ptr==NULL)
 		return;
 	
-	relloc_code(&vm_p->code_ptr);
-	vm_p->code_ptr.root_ptr[(vm_p->code_ptr.inst_len)++] = a_i;
+	relloc_code(code_ptr);
+	code_ptr->root_ptr[(code_ptr->inst_len)++] = a_i;
 }
 
 

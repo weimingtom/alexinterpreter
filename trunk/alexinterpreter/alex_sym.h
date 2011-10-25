@@ -13,7 +13,8 @@ enum sym_type{
 	sym_type_reg_func,	// reg func
 	sym_type_al,
 	sym_type_alp,
-	sym_type_pointer
+	sym_type_pointer,
+	sym_type_addr
 };
 
 
@@ -33,6 +34,7 @@ typedef union _s_value{
 	ALEX_FUNC	func;
 	alex_al*	al; 
 	ALEX_P		ptr;
+	int			addr;
 }s_value;
 
 

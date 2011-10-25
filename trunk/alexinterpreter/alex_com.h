@@ -8,6 +8,12 @@
 	alex interpret compile
 */
 
+
+typedef enum _e_e{
+	COM_SUCCESS,
+	COM_ERROR_NOT_ALLOW
+}e_e;
+
 typedef enum _e_gl{
 	COM_ERROR,
 	COM_GLOBAL,
@@ -35,7 +41,9 @@ typedef struct _com_env{
 
 #define g_com_addr(c_p,s) com_addr((c_p),(s), COM_GLOBAL)
 #define l_com_addr(c_p,s) com_addr((c_p),(s), COM_LOCAL)
- 
+#define check_com(s)	  do{int r_s=(s); (r_s)?(return r_s):(0)}while(0) 
+
+
 r_addr com_addr(com_env* com_p, char* name, e_gl gl);
 r_addr search_addr(com_env* com_p, char* name);
 

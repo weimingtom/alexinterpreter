@@ -17,31 +17,92 @@ com_env* init_com_env()
 	return ret_c_e_p;
 } 
 
-void alex_com(com_env* com_p, tree_node* main_tree)
+// 编译code入口 main_tree为执行调用代码 func_tree为函数链表
+void alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 {
 	if(main_tree == NULL)
 		return;
-	
-	switch(type_tree(main_tree))
+	 
+	while(func_tree)
 	{
-	case bnf_type_vardef:
-		{
-			inter_vardef(env.g_table, main_tree);		// add to global_table
-		}
-		break;
-	case bnf_type_funccall:
-		{
-			inter_funccall(env, main_tree);
-		}
-		break;
-	default:
-		{
-			print("inter[error line %d]: the g_code not allow!\n", main_tree->line);
-		}
-		return;
+		com_func_def(com_p, func_tree);
+		func_tree = func_tree->next;
 	}
+
+	while(main_tree)
+	{
+		switch(type_tree(main_tree))
+		{
+		case bnf_type_vardef:
+			{
+				com_g_var(com_p, main_tree);
+			}
+			break;
+		case bnf_type_funccall:
+			{
+				com_func_call(com_p, main_tree);
+			}
+			break;
+		default:
+			{
+				print("com[error line %d]: the g_code not allow!\n", main_tree->line);
+			}
+			return;
+		}
+		main_tree = main_tree->next;
+	}
+}
+
+
+int com_func_def(com_env* com_p, tree_node* t_n)
+{
 	
-	alex_interpret(env, main_tree->next);
+}
+
+
+int com_func_call(com_env* com_p, tree_node* t_n)
+{
+	
+}
+
+
+int com_ass(com_env* com_p, tree_node* t_n)
+{
+
+}
+
+int  com_g_var(com_env* com_p, tree_node* t_n, e_gl gl)
+{
+	t_n = t_n->childs_p[0];
+
+	while(t_n)
+	{
+		switch(type_tree(t_n))
+		{
+		case bnf_type_var:
+			{
+				com_addr(com_p, t_n->b_v.name.s_ptr, gl);
+			}
+			break;
+		case bnf_type_ass:
+			{
+				r_addr r_a = com_addr(com_p, t_n->childs_p[0]->b_v.name.s_ptr, gl);
+				check_com(com_ass(com_p, t_n));
+
+				push_inst(&com_p->com_inst, new_inst((r_a.gl==COM_LOCAL)?(MOVE):(GMOVE), r_a.addr));
+			}
+			break;
+		default:
+			print("inter[error line %d] at var def the  tree_node \"%s\" no allow!\n", t_n->line, string_bnf(t_n->b_t));
+			return COM_ERROR_NOT_ALLOW;
+		}
+		t_n = t_n->next;
+	}
+}
+
+void com_l_var(com_env* com_p, tree_node* t_n)
+{
+
 }
 
 
@@ -118,4 +179,29 @@ r_addr search_addr(com_env* com_p, char* name)
 	}
 
 	return ret;
+}
+
+alex_inst new_inst(e_alex_inst e_i, ...)
+{
+	alex_inst a_i = {0};
+	va_list arg_list;
+
+	va_start(arg_list, e_i);
+	a_i.inst_type = e_i;
+	switch(e_i)
+	{
+	case CALL:
+	case JUMP:
+	case GMOVE:
+	case MOVE:
+		{
+			int addr = va_arg(arg_list, int);
+			a_i.inst_value.r_t = sym_type_addr;
+			a_i.inst_value.r_v.addr = addr;
+		}	
+		break;
+	}
+	va_end(a_i);
+
+	return a_i;
 }
