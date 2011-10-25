@@ -10,7 +10,9 @@
 
 // 语法解析 根据BNF生成相应的TREE结构
 
-main_tree m_tree = {0};
+main_tree m_tree = {0};		// 执行代码链表tree
+main_tree f_tree = {0};		// 函数链表tree
+
 byte error_flag =0;
 char* bnf_type_str[] = {
 	"bnf_type_ass",	
@@ -35,35 +37,35 @@ char* bnf_type_str[] = {
 	"bnf_type_while"
 };
 
-tree_node* add_main(tree_node* t_n)
+tree_node* add_tree(main_tree* m_t, tree_node* t_n)
 {
-	if(t_n == NULL)
+	if(t_n == NULL || m_t==NULL)
 		return NULL;
 
-	if(m_tree.head == NULL)
+	if(m_t->head == NULL)
 	{
-		m_tree.head = t_n;
+		m_t->head = t_n;
 	}
-	if(m_tree.end == NULL)
+	if(m_t->end == NULL)
 	{
-		m_tree.end = t_n;
+		m_t->end = t_n;
 	}
 
-	if(m_tree.end != t_n)
+	if(m_t->end != t_n)
 	{
-		m_tree.end->next = t_n;
-		m_tree.end = t_n;
+		m_t->end->next = t_n;
+		m_t->end = t_n;
 	}
 
 	return t_n;
 }
 
+
+
 tree_node* alex_parsing(token_list* t_lt)
 {
 	token* tk_p = NULL;
 	tree_node* r_tn = NULL;
-	
-	tree_node* main_tn = NULL;			// 
 
 	if(t_lt == NULL)
 		return NULL;	
@@ -94,7 +96,10 @@ tree_node* alex_parsing(token_list* t_lt)
 			{
 				r_tn = syn_func_def(t_lt);
 				if(r_tn)
+				{
 					add_g_table(new_func_st(r_tn->b_v.name.s_ptr, r_tn));
+					add_func(r_tn);
+				}
 				else
 					return NULL;
 			}

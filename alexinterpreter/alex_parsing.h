@@ -72,9 +72,11 @@ extern main_tree m_tree;
 
 // 获得当前tree类型
 #define  type_tree(t_n)		(t_n->b_t)
+#define  add_main(t_n)		add_tree(&m_tree, (t_n))
+#define  add_func(t_n)		add_tree(&f_tree, (t_n))
 
 int syn_watch(token_list* t_lt,  enum _token_type t_t);
- 
+tree_node* add_tree(main_tree* m_t, tree_node* t_n); 
 tree_node* syn_exp_stmt(token_list* t_lt);
 tree_node* syn_exp_def(token_list* t_lt);
 tree_node* syn_logic_exp(token_list* t_lt);

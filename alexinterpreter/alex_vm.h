@@ -13,6 +13,7 @@ enum _inst
 	PUSH,
 	POP,
 	MOVE,
+	GMOVE,
 	ADD,
 	SUB,
 	MUL,
@@ -74,7 +75,7 @@ d_data* relloc_data(d_data* d_d, int d_len);
 vm_env* init_vm_env();
 void free_vm_evn(vm_env* vm_p);
 
-void push_inst(vm_env* vm_p, alex_inst a_i);
+void push_inst(c_inst* code_ptr, alex_inst a_i);
 void push_stack(vm_env* vm_p, r_value r_v);
 void push_local(vm_env* vm_p, r_value r_v);
 void push_global(vm_env* vm_p, r_value r_v);
