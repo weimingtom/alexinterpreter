@@ -5,24 +5,25 @@
 #include "alex_vm.h"
 #include "stdlib.h"
 
+vm_env alex_vm = {0};
 
-
-
-vm_env init_vm_env()
+// ³õÊ¼»¯ÐéÄâ»ú
+vm_env* init_vm_env()
 {
-	vm_env ret_vm_env = {0};
+	free_vm_evn(&alex_vm);
 
 	// fill code segment
+	relloc_code(&alex_vm.code_ptr);
+	relloc_stack(&alex_vm.data_ptr);
+	relloc_local(&alex_vm.local_ptr);
+	relloc_global(&alex_vm.global_ptr);
 
-	relloc_code(&ret_vm_env.code_ptr);
-	relloc_stack(&ret_vm_env.data_ptr);
-	relloc_local(&ret_vm_env.local_ptr);
-
-	ret_vm_env.local_top =0;
-	ret_vm_env.pc=0;
-
-	return ret_vm_env;
+	alex_vm.local_top =0;
+	alex_vm.pc=0;
+	
+	return &alex_vm;
 }
+
 
 void free_vm_evn(vm_env* vm_p)
 {
@@ -37,6 +38,9 @@ void free_vm_evn(vm_env* vm_p)
 
 	if(vm_p->local_ptr.root_ptr)
 		free(vm_p->local_ptr.root_ptr);
+
+	if(vm_p->global_ptr.root_ptr)
+		free(vm_p->global_ptr.root_ptr);
 
 	memset(vm_p, 0, sizeof(vm_env));
 }
@@ -83,7 +87,7 @@ void push_inst(vm_env* vm_p, alex_inst a_i)
 {
 	if(vm_p==NULL)
 		return;
-
+	
 	relloc_code(&vm_p->code_ptr);
 	vm_p->code_ptr.root_ptr[(vm_p->code_ptr.inst_len)++] = a_i;
 }
@@ -93,19 +97,35 @@ void push_stack(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)
 		return;
-
+	
 	relloc_stack(&vm_p->data_ptr);
 	vm_p->data_ptr.root_ptr[(vm_p->data_ptr.data_len)++] = r_v;
-
+	
 	vm_p->top = vm_p->data_ptr.data_len;
 }
 
 
-void push_local(vm_env* vm_p, r_value r_v)
+// push local ide  return is offset local_top 
+int push_local(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)
 		return;
-
+	
 	relloc_local(&vm_p->local_ptr);
-	vm_p->local_ptr.root_ptr[(vm_p->local_ptr.data_len)++] = r_v;
+	vm_p->local_ptr.root_ptr[(vm_p->local_ptr.data_len)] = r_v;
+	
+	return ((vm_p->local_ptr.data_len++) -vm_p->local_top);
+}
+
+
+// push global ide, return is data_len, because global stack is only one
+int push_global(vm_env* vm_p, r_value r_v)
+{
+	if(vm_p==NULL)
+		return;
+	
+	relloc_global(&vm_p->global_ptr);
+	vm_p->global_ptr.root_ptr[(vm_p->global_ptr.data_len)] = r_v;
+	
+	return (vm_p->global_ptr.data_len)++;
 }
