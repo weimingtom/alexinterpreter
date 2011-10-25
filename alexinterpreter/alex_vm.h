@@ -4,10 +4,12 @@
 
 #define CODE_MEM_LEN	512			// 默认代码段长度
 #define DATA_MEM_LEN	64			// 默认操作数据堆栈段长度
-#define LOCAL_MEM_LEN	1280		// 局部堆栈数据段
+#define LOCAL_MEM_LEN	1024		// 局部数据堆栈数据段
+#define GLOBAL_MEM_LEN	64			// 默认全局堆栈数据段
 
 enum _inst
 {
+	END,							//结束指令
 	PUSH,
 	POP,
 	MOVE,
@@ -49,19 +51,32 @@ typedef struct _d_data
 
 typedef struct _vm_env
 {
-	c_inst		code_ptr;	// 代码段指针			
-	d_data		data_ptr;	// 数据堆栈段指针	
-	int			pc;			// 程序计数器			
+	c_inst		code_ptr;	// 代码段指针				
+	int			pc;			// 程序计数器
+
+	d_data		data_ptr;	// 数据堆栈段指针
 	int			top;		// 数据段堆栈指针		
 
-	d_data		local_ptr;	//局部堆栈
-	int			local_top;	//局部堆栈指针
+	d_data		local_ptr;	//局部变量堆栈
+	int			local_top;	//局部变量堆栈指针
+
+	d_data		global_ptr;	//全局变量堆栈
 }vm_env;
 
 #define relloc_stack(d_d)	relloc_data((d_d), DATA_MEM_LEN)
 #define relloc_local(d_d)	relloc_data((d_d), LOCAL_MEM_LEN)
-vm_env new_vm_env();
+#define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
+
+extern vm_env alex_vm;
+
 c_inst* relloc_code(c_inst* c_i);
 d_data* relloc_data(d_data* d_d, int d_len);
+vm_env* init_vm_env();
+void free_vm_evn(vm_env* vm_p);
+
+void push_inst(vm_env* vm_p, alex_inst a_i);
+void push_stack(vm_env* vm_p, r_value r_v);
+void push_local(vm_env* vm_p, r_value r_v);
+void push_global(vm_env* vm_p, r_value r_v);
 
 #endif
