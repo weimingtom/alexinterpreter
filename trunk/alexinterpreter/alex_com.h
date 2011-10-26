@@ -46,5 +46,8 @@ typedef struct _com_env{
 
 r_addr com_addr(com_env* com_p, char* name, e_gl gl);
 r_addr search_addr(com_env* com_p, char* name);
+int  com_var(com_env* com_p, tree_node* t_n, e_gl gl);
+#define com_g_var(c_p, t_n)		com_var((c_p), (t_n), COM_GLOBAL)
+#define com_l_var(c_p, t_n)		com_var((c_p), (t_n), COM_LOCAL)
 
 #endif

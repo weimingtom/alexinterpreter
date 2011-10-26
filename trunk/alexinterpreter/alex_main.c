@@ -24,27 +24,14 @@ int  alex_run(char* file)
 	inter_env env = new_inter_env();
 	tree_node* t_n = NULL;
 
-	if(file==NULL)
-		return 0;
-
+	(file==NULL)?(return 0):(0);
 	alex_load_file(file);
-	
-//	print_token();
-	
-	t_n = alex_parsing(&t_l);
-	if(t_n == NULL)
-		goto END;
-//	print_tree(m_tree.head);
-	
-//	print("alex parsing end......\n");
+	(alex_parsing(&t_l)==NULL)?(return 0):(0);
 	
 	print("\n\n -----CONSEL-----\n");
 	alex_interpret(env, m_tree.head);
-	ret = 1;
-	
-END:
 
-	return ret;
+	return 1;
 }
 
 void alex_free()
@@ -57,7 +44,6 @@ void alex_free()
 int main(int arg, char* arg_list[])
 {
 	alex_init();
-//	print("arg: %s", arg_list[1]);
 	alex_run("F:\\code\\alex\\tt.alx");
 	getchar();
 	return 0;

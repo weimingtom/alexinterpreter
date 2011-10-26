@@ -9,7 +9,6 @@ typedef struct _inter_env{
 	sym_table* l_table;		// local table
 }inter_env;
 
-
 // ret type
 typedef enum _ret_type{
 	ret_normal,
