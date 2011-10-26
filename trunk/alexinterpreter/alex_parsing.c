@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "alex_sym.h"
-
+#include "alex_com.h"
 
 
 // 语法解析 根据BNF生成相应的TREE结构
@@ -97,8 +97,17 @@ tree_node* alex_parsing(token_list* t_lt)
 				r_tn = syn_func_def(t_lt);
 				if(r_tn)
 				{
-					add_g_table(new_func_st(r_tn->b_v.name.s_ptr, r_tn));
-					add_func(r_tn);
+					if(look_table(&global_table, r_tn->b_v.name))
+					{
+						st* r_st = add_g_table(new_func_st(r_tn->b_v.name.s_ptr, r_tn));
+						add_func(r_tn);
+					}
+					else
+					{
+						free_tree(r_tn);
+						print("parsing[erro line %d]: the function %s is redef!\n", tk_p->token_line, r_tn->b_v.name.s_ptr);
+						return NULL;
+					}
 				}
 				else
 					return NULL;

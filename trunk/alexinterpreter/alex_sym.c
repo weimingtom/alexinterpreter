@@ -67,8 +67,10 @@ st* add_table(sym_table* s_t, st st_v)
 	if(st_v.s_t == sym_type_al)
 		st_v.s_v.al->count++;
 
+	//  进行编译地址赋值
+	st_v.st_addr = (s_t==global_table)?(com_env_p->var_table.g_top++):(com_env_p->var_table.l_top++);
 	(*st_w)->st_v = st_v;
-
+	
 	return &((*st_w)->st_v);
 }
 
@@ -174,12 +176,12 @@ void free_st(st* st_p)
 
 
 
-void add_g_table(st  a_st)
+st* add_g_table(st  a_st)
 {
 	if(global_table == NULL)
 		global_table = new_table();
 
-	add_table(global_table, a_st);
+	return add_table(global_table, a_st);
 }
 
 

@@ -5,7 +5,7 @@
 #include "alex_lib.h"
 #include "alex_get_token.h"
 #include "alex_log.h"
-
+#include "alex_com.h"
 
 void  alex_init()
 {	
@@ -22,6 +22,7 @@ int  alex_run(char* file)
 {
 	int ret = 0;
 	inter_env env = new_inter_env();
+	com_env_p = new_com_env();	
 	tree_node* t_n = NULL;
 
 	(file==NULL)?(return 0):(0);
@@ -29,8 +30,8 @@ int  alex_run(char* file)
 	(alex_parsing(&t_l)==NULL)?(return 0):(0);
 	
 	print("\n\n -----CONSEL-----\n");
-	alex_interpret(env, m_tree.head);
-
+//	alex_interpret(env, m_tree.head);
+	
 	return 1;
 }
 

@@ -72,7 +72,7 @@ st*	look_table(sym_table* s_t, char* s_str);
 st* add_new_table(sym_table* s_t, char* name);
 st* add_table(sym_table* s_t, st st_v);
 void free_table(sym_table* s_t);
-void add_g_table(st  a_st);
+st* add_g_table(st  a_st);
 void print_table(sym_table* s_t);
 
 void free_st(st* st_p);
