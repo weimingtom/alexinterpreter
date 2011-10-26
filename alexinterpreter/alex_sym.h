@@ -42,6 +42,7 @@ typedef struct _st{
 	a_string name;
 	enum sym_type s_t;
 	s_value s_v;
+	int st_addr;			// vm虚拟机中的数据地址
 }st;
 
 typedef struct _st_node{

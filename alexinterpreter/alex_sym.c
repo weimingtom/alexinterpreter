@@ -18,7 +18,6 @@ sym_table* new_table()
 	sym_table* r_st = (sym_table*)malloc(sizeof(sym_table));
 	memset(r_st, 0, sizeof(sym_table));
 
-
 	return r_st;
 }
 
@@ -69,8 +68,7 @@ st* add_table(sym_table* s_t, st st_v)
 		st_v.s_v.al->count++;
 
 	(*st_w)->st_v = st_v;
-	
-		
+
 	return &((*st_w)->st_v);
 }
 

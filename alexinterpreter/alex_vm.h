@@ -11,9 +11,11 @@ enum _inst
 {
 	END,							//Ω· ¯÷∏¡Ó
 	PUSH,
+	GPUSH,
 	POP,
 	MOVE,
 	GMOVE,
+	TABLE,
 	ADD,
 	SUB,
 	MUL,
