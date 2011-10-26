@@ -2,14 +2,14 @@
 #include "alex_vm.h"
 
 
-
-com_env* init_com_env()
+com_env* com_env_p = NULL;
+com_env* new_com_env()
 {
 	com_env* ret_c_e_p = (com_env*)malloc(sizeof(com_env));
 	memset(ret_c_e_p, 0, sizeof(com_env));
 
 	relloc_code(&(ret_c_e_p->com_inst));
-	ret_c_e_p->var_table.g_table = new_table();
+	ret_c_e_p->var_table.g_table = &global_table;
 	ret_c_e_p->var_table.g_top=0;
 
 	ret_c_e_p->var_table.l_table = new_table();
@@ -62,7 +62,14 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 
 int com_func_call(com_env* com_p, tree_node* t_n)
 {
-	
+	r_addr r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
+	if(r_a.gl == COM_ERROR)
+	{
+		print("com[error line :%d] the func %s is not find!\n", t_n->line, t_n->b_v.name.s_ptr);
+		return COM_ERROR_NOT_FIND_IDE;
+	}
+
+	return COM_SUCCESS;
 }
 
 
@@ -71,24 +78,36 @@ int com_ass(com_env* com_p, tree_node* t_n)
 
 }
 
-int  com_g_var(com_env* com_p, tree_node* t_n, e_gl gl)
+int  com_var(com_env* com_p, tree_node* t_n, e_gl gl)
 {
+	sym_table* a_table = NULL;	
 	t_n = t_n->childs_p[0];
-
+	a_table = (gl==COM_GLOBAL)?(com_p->var_table.g_table):(com_p->var_table.l_table);
+				
 	while(t_n)
 	{
+		char* var_name = NULL;
 		switch(type_tree(t_n))
 		{
-		case bnf_type_var:
-			{
-				com_addr(com_p, t_n->b_v.name.s_ptr, gl);
-			}
-			break;
 		case bnf_type_ass:
+			var_name = t_n->childs_p[0]->b_v.name.s_ptr;
+			goto CHECK_VAR;
+		case bnf_type_var:
+			var_name = t_n->b_v.name.s_ptr;
+CHECK_VAR:
+			if(look_table(a_table, var_name))
 			{
-				r_addr r_a = com_addr(com_p, t_n->childs_p[0]->b_v.name.s_ptr, gl);
-				check_com(com_ass(com_p, t_n));
+				print("com[error line: %d] the var  \"%s\" ide is redefine!\n", t_n->line, var_name);
+				return COM_ERROR_REDEF;
+			}
+			else
+				add_new_table(a_table, var_name);
 
+			if(type_tree(t_n)==bnf_type_ass)
+			{
+				r_addr r_a = {0};
+				check_com(com_ass(com_p, t_n));
+				r_a = search_addr(com_p, var_name);
 				push_inst(&com_p->com_inst, new_inst((r_a.gl==COM_LOCAL)?(MOVE):(GMOVE), r_a.addr));
 			}
 			break;
@@ -100,13 +119,9 @@ int  com_g_var(com_env* com_p, tree_node* t_n, e_gl gl)
 	}
 }
 
-void com_l_var(com_env* com_p, tree_node* t_n)
-{
-
-}
 
 
-void free_local_addr(com_env* com_p)
+void clear_local_addr(com_env* com_p)
 {
 	if(com_p==NULL)
 		return;
