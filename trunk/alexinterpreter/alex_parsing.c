@@ -298,6 +298,7 @@ tree_node* syn_arg_def(token_list* t_lt)
 		n_t = at_token(t_lt);
 		if(type_token(t_lt) == token_type_ide)
 		{
+			(rt_n->b_v.number)++;
 			*nrt_n = new_tree_node(get_line(t_lt), bnf_type_var);
 			(*nrt_n)->b_v.name = alex_string(n_t->token_name.s_ptr);
 			nrt_n = &((*nrt_n)->next);

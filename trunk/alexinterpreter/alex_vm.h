@@ -6,15 +6,14 @@
 #define DATA_MEM_LEN	64			// 默认操作数据堆栈段长度
 #define LOCAL_MEM_LEN	1024		// 局部数据堆栈数据段
 #define GLOBAL_MEM_LEN	64			// 默认全局堆栈数据段
+#define CALL_MEM_LEN	256			// 默认函数调用堆栈数据段
 
 enum _inst
 {
 	END,							//结束指令
 	PUSH,
-	GPUSH,
 	POP,
 	MOVE,
-	GMOVE,
 	TABLE,
 	ADD,
 	SUB,
@@ -34,6 +33,7 @@ enum _inst
 typedef struct _alex_inst
 {
 	ubyte inst_type;		// 指令类型
+	ubyte gl;				// global or local?
 	r_value inst_value;		// 指令操作值
 }alex_inst;
 
@@ -62,13 +62,15 @@ typedef struct _vm_env
 
 	d_data		local_ptr;	//局部变量堆栈
 	int			local_top;	//局部变量堆栈指针
-
+	
+	d_data		call_ptr;	// 函数调用堆栈
 	d_data		global_ptr;	//全局变量堆栈
 }vm_env;
 
 #define relloc_stack(d_d)	relloc_data((d_d), DATA_MEM_LEN)
 #define relloc_local(d_d)	relloc_data((d_d), LOCAL_MEM_LEN)
 #define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
+#define relloc_call(d_d)	relloc_data((d_d), CALL_MEM_LEN)
 
 extern vm_env alex_vm;
 
