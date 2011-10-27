@@ -56,26 +56,107 @@ void alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 
 int com_func_def(com_env* com_p, tree_node* t_n)
 {
-	
+	tree_node* arg_t_n = t_n->childs_p[0];
+	tree_node* seg_t_n = t_n->childs_p[1];
+	check_com(com_arg_def(com_p, arg_t_n));
+	check_com(com_seg(com_p, seg_t_n));
+
+	return COM_SUCCESS;
 }
 
+
+int com_arg_def(com_env* com_p, tree_node* t_n)
+{
+	int i;
+	int arg_num = (int)t_n->b_v.number;
+	t_n = t_n->childs_p[0];
+
+	// set addr
+	while(t_n)
+	{
+		l_com_addr(com_p, t_n->b_v.name.s_ptr);
+		t_n = t_n->next;
+	}
+	
+	// push inst 
+	for(i=arg_num-1; i>=0; i--)
+	{
+		push_inst(&com_p->com_inst, new_inst(MOVE, COM_LOCAL, i));
+		push_inst(&com_p->com_inst, new_inst(POP));
+	}
+
+	return COM_SUCCESS;
+}
+
+int com_seg(com_env* com_p, tree_node* t_n)
+{
+	
+	return COM_SUCCESS;
+}
 
 int com_func_call(com_env* com_p, tree_node* t_n)
 {
 	r_addr r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
+	st* ret_st = NULL;
 	if(r_a.gl == COM_ERROR)
 	{
 		print("com[error line :%d] the func %s is not find!\n", t_n->line, t_n->b_v.name.s_ptr);
 		return COM_ERROR_NOT_FIND_IDE;
+	}
+	else
+	{
+		ret_st = look_com(com_p, t_n->b_v.name.s_ptr);
+		check_com(com_arg(com_p, t_n));	
+		push_inst(&com_p->com_inst, new_inst(CALL, r_a.gl, r_addr));
+	}
+	
+	return COM_SUCCESS;
+}
+
+
+int com_arg(com_env* com_p, tree_node* t_n)
+{
+	tree_node* t_n = t_n->childs_p[0];
+
+	while(t_n)
+	{
+		check_com(com_exp(com_p, t_n));
+		t_n = t_n->next;
 	}
 
 	return COM_SUCCESS;
 }
 
 
+int com_exp(com_env* com_p, tree_node* t_n)
+{
+	return COM_SUCCESS;
+}
+
+
+int com_exp_stmt(com_env* com_p, tree_node* t_n)
+{
+	check_com(com_exp(com_p, t_n));
+	push_inst(&com_p->com_inst, new_inst(POP));
+	
+	return COM_SUCCESS;
+}
+
 int com_ass(com_env* com_p, tree_node* t_n)
 {
+	tree_node* l_t_n = t_n->childs_p[0];
+	switch(type_tree(l_t_n))
+	{
+	case bnf_type_var:
+		break;
+	case bnf_type_al:
+		break;
+	default:
+		print("com[error line: %d] the ide can not left value!\n", t_n->line);
+		return COM_ERROR_NOT_LEFT_VALUE;
+	}
 
+	return COM_SUCCESS;
 }
 
 int  com_var(com_env* com_p, tree_node* t_n, e_gl gl)
@@ -108,7 +189,8 @@ CHECK_VAR:
 				r_addr r_a = {0};
 				check_com(com_ass(com_p, t_n));
 				r_a = search_addr(com_p, var_name);
-				push_inst(&com_p->com_inst, new_inst((r_a.gl==COM_LOCAL)?(MOVE):(GMOVE), r_a.addr));
+				push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
+				push_inst(&com_p->com_inst, new_inst(POP));
 			}
 			break;
 		default:
@@ -168,6 +250,17 @@ r_addr com_addr(com_env* com_p, char* name, e_gl gl)
 }
 
 
+st*  look_com(com_env* com_p, char* str)
+{
+	st* ret_st = NULL;
+	ret_st = look_table(com_p->var_table.l_table, str);
+	if(ret_st)
+		return ret_st;
+	else
+		return look_table(com_p->var_table.g_table, str);
+}
+
+
 // ≤È’“µÿ÷∑
 r_addr search_addr(com_env* com_p, char* name)
 {
@@ -203,16 +296,15 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 
 	va_start(arg_list, e_i);
 	a_i.inst_type = e_i;
-	switch(e_i)
+	switch(a_i.inst_type)
 	{
 	case CALL:
 	case JUMP:
-	case GMOVE:
 	case MOVE:
 		{
-			int addr = va_arg(arg_list, int);
-			a_i.inst_value.r_t = sym_type_addr;
-			a_i.inst_value.r_v.addr = addr;
+			a_i.gl = (e_gl)va_arg(arg_list, e_gl);			// get gl
+			a_i.inst_value.r_v.addr = va_arg(arg_list, int);// get addr
+			a_i.inst_value.r_t = sym_type_addr;				// set type
 		}	
 		break;
 	}

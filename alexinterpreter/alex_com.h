@@ -13,7 +13,8 @@ typedef enum _e_e{
 	COM_SUCCESS,
 	COM_ERROR_NOT_ALLOW,
 	COM_ERROR_NOT_FIND_IDE,
-	COM_ERROR_REDEF
+	COM_ERROR_REDEF,
+	COM_ERROR_NOT_LEFT_VALUE
 }e_e;
 
 typedef enum _e_gl{
@@ -52,5 +53,7 @@ r_addr search_addr(com_env* com_p, char* name);
 int  com_var(com_env* com_p, tree_node* t_n, e_gl gl);
 #define com_g_var(c_p, t_n)		com_var((c_p), (t_n), COM_GLOBAL)
 #define com_l_var(c_p, t_n)		com_var((c_p), (t_n), COM_LOCAL)
+st*  look_com(com_env* com_p, char* str);
+alex_inst new_inst(e_alex_inst e_i, ...);
 
 #endif

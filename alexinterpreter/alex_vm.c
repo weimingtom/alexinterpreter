@@ -17,6 +17,7 @@ vm_env* init_vm_env()
 	relloc_stack(&alex_vm.data_ptr);
 	relloc_local(&alex_vm.local_ptr);
 	relloc_global(&alex_vm.global_ptr);
+	relloc_call(&alex_vm.call_ptr);
 
 	alex_vm.local_top =0;
 	alex_vm.pc=0;

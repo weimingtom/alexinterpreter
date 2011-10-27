@@ -14,7 +14,8 @@ enum sym_type{
 	sym_type_al,
 	sym_type_alp,
 	sym_type_pointer,
-	sym_type_addr
+	sym_type_addr,
+	sym_type_arg_num
 };
 
 
@@ -35,6 +36,7 @@ typedef union _s_value{
 	alex_al*	al; 
 	ALEX_P		ptr;
 	int			addr;
+	int			arg_num;		
 }s_value;
 
 
@@ -47,7 +49,6 @@ typedef struct _st{
 
 typedef struct _st_node{
 	st	st_v;
-
 	struct _st_node* next;
 }st_node;
 
@@ -60,6 +61,7 @@ typedef struct _sym_table{
 
 typedef struct _r_value{
 	s_value r_v;		// rect value 
+	
 	enum sym_type r_t;	// rect type
 }r_value;
 
