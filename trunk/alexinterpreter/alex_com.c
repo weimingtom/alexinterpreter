@@ -14,6 +14,8 @@ com_env* new_com_env()
 
 	ret_c_e_p->var_table.l_table = new_table();
 	ret_c_e_p->var_table.l_top=0;
+
+	relloc_data(&(ret_c_e_p->var_table.temp_ptr), TEMP_MEM_LEN);
 	return ret_c_e_p;
 } 
 
@@ -58,9 +60,12 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 {
 	tree_node* arg_t_n = t_n->childs_p[0];
 	tree_node* seg_t_n = t_n->childs_p[1];
+
 	check_com(com_arg_def(com_p, arg_t_n));
 	check_com(com_seg(com_p, seg_t_n));
 
+	// if the function is not return, so assume is number 0
+	check_com(com_return_assume(com_p, t_n));
 	return COM_SUCCESS;
 }
 
@@ -90,6 +95,91 @@ int com_arg_def(com_env* com_p, tree_node* t_n)
 
 int com_seg(com_env* com_p, tree_node* t_n)
 {
+	t_n = t_n->childs_p[0];
+	
+	while(t_n)
+	{
+		switch(type_tree(t_n))
+		{
+		case bnf_type_seg:
+			check_com(com_seg(com_p, t_n));
+			break;
+		case bnf_type_vardef:
+			check_com(com_l_var(com_p, t_n));
+			break;
+		case bnf_type_return:
+			check_com(com_return(com_p, t_n));
+			break;
+		case bnf_type_break:
+			check_com(com_break(com_p, t_n));
+			break;
+		case bnf_type_continue:
+			check_com(com_continue(com_p, t_n));
+			break;
+		case bnf_type_if:
+			check_com(com_if(com_p, t_n));
+			break;
+		case bnf_type_while:
+			check_com(com_while(com_p, t_n));
+			break;
+		default:
+			check_com(com_exp_stmt(com_p, t_n));
+			break;
+		}
+		t_n = t_n->next;
+	}
+
+	return COM_SUCCESS;
+}
+
+int com_return(com_env* com_p, tree_node* t_n)
+{
+	t_n = t_n->childs_p[0];
+	if(t_n==NULL)			// not return value
+	{
+		com_return_assume(com_p, t_n);
+	}
+	else
+	{
+		check_com(com_exp(com_p, t_n));
+		push_inst(&com_p->com_inst, new_inst(RET));
+	}
+
+	return COM_SUCCESS;
+} 
+
+// when return; or no return
+int com_return_assume(com_env* com_p, tree_node* t_n)
+{
+	r_value r_v = new_number(0);
+
+	push_inst(&com_p->com_inst, new_inst(PUSH, r_v));
+	push_inst(&com_p->com_inst, new_inst(RET));
+	
+	return COM_SUCCESS;
+}
+
+
+int com_break(com_env* com_p, tree_node* t_n)
+{
+	return COM_SUCCESS;
+}
+
+int com_continue(com_env* com_p, tree_node* t_n)
+{
+	return COM_SUCCESS;
+}
+
+int com_if(com_env* com_p, tree_node* t_n)
+{
+	return COM_SUCCESS;
+}
+
+int com_while(com_env* com_p, tree_node* t_n)
+{
+
+	/* while seg*/
+
 	
 	return COM_SUCCESS;
 }
@@ -306,6 +396,11 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 			a_i.inst_value.r_v.addr = va_arg(arg_list, int);// get addr
 			a_i.inst_value.r_t = sym_type_addr;				// set type
 		}	
+		break;
+	case PUSH:
+		{
+			a_i.inst_value = (r_value)va_arg(arg_list, r_value);
+		}
 		break;
 	}
 	va_end(a_i);

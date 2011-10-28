@@ -27,7 +27,7 @@ typedef  a_string		ALEX_NAME;
 typedef  void*			ALEX_FUNC;
 typedef void*			ALEX_P;
 #define  a_print	   printf	
-
+typedef unsigned int	uint;
 
 typedef unsigned char ubyte;
 

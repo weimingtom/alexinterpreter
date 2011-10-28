@@ -83,5 +83,6 @@ void push_inst(c_inst* code_ptr, alex_inst a_i);
 void push_stack(vm_env* vm_p, r_value r_v);
 void push_local(vm_env* vm_p, r_value r_v);
 void push_global(vm_env* vm_p, r_value r_v);
+r_value pop_data(d_data* d_ptr);
 
 #endif
