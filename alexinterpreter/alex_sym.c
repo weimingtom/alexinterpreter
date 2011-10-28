@@ -229,3 +229,12 @@ st new_str_st(char* name, ALEX_STRING tn_s)
 
 	return r_t;
 }
+
+r_value new_number(ALEX_NUMBER num)
+{
+	r_value ret = {0};
+	ret.r_t = sym_type_num;
+	ret.r_v.num = num;
+
+	return ret;
+}

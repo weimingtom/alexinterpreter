@@ -8,13 +8,15 @@
 	alex interpret compile
 */
 
+#define TEMP_MEM_LEN 64
 
 typedef enum _e_e{
 	COM_SUCCESS,
 	COM_ERROR_NOT_ALLOW,
 	COM_ERROR_NOT_FIND_IDE,
 	COM_ERROR_REDEF,
-	COM_ERROR_NOT_LEFT_VALUE
+	COM_ERROR_NOT_LEFT_VALUE,
+	COM_ERROE_POP
 }e_e;
 
 typedef enum _e_gl{
@@ -31,9 +33,11 @@ typedef struct _r_addr{
 typedef struct _var_addr{
 	sym_table* g_table;
 	int g_top;
-
+	
 	sym_table* l_table;
 	int l_top;
+
+	d_data  temp_ptr; 
 }var_addr;
 
 typedef struct _com_env{
@@ -45,6 +49,7 @@ typedef struct _com_env{
 #define g_com_addr(c_p,s) com_addr((c_p),(s), COM_GLOBAL)
 #define l_com_addr(c_p,s) com_addr((c_p),(s), COM_LOCAL)
 #define check_com(s)	  do{int r_s=(s); (r_s)?(return r_s):(0)}while(0) 
+#define check_pop(r_v)	 do{(r_v.r_t==sym_type_error)?(return COM_ERROE_POP):(0)}while(0)
 
 extern com_env* com_env_p;
 com_env* new_com_env();

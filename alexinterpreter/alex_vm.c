@@ -93,6 +93,28 @@ void push_inst(c_inst* code_ptr, alex_inst a_i)
 	code_ptr->root_ptr[(code_ptr->inst_len)++] = a_i;
 }
 
+r_value pop_data(d_data* d_ptr)
+{
+	r_value  r_v = {0};
+	if(d_ptr==NULL)
+	{
+		r_v.r_t = sym_type_error;
+		return r_v;
+	}
+	else if(d_ptr->data_len <=0)
+	{
+		print("pop[error: ]you are try a nil data at stack!\n");
+		r_v.r_t = sym_type_error;
+
+		return r_v;
+	}
+	else
+	{
+		r_v = d_ptr->root_ptr[d_ptr->data_len--];
+		return r_v;
+	}
+
+}
 
 void push_stack(vm_env* vm_p, r_value r_v)
 {
@@ -129,4 +151,16 @@ int push_global(vm_env* vm_p, r_value r_v)
 	vm_p->global_ptr.root_ptr[(vm_p->global_ptr.data_len)] = r_v;
 	
 	return (vm_p->global_ptr.data_len)++;
+}
+
+// when func call, push pc, local_top and arg_num
+int push_call(vm_env* vm_p, r_value r_v)
+{
+	if(vm_p==NULL)
+		return;
+	
+	relloc_global(&vm_p->call_ptr);
+	vm_p->call_ptr.root_ptr[(vm_p->call_ptr.data_len)] = r_v;
+	
+	return (vm_p->call_ptr.data_len)++;	
 }
