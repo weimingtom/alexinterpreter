@@ -8,12 +8,20 @@
 #define GLOBAL_MEM_LEN	64			// 默认全局堆栈数据段
 #define CALL_MEM_LEN	256			// 默认函数调用堆栈数据段
 
+#define NULL_ADDR		(-1)
+
 enum _inst
 {
 	END,							//结束指令
 	PUSH,
+	PUSHVAR,
 	POP,
+	NEWAL,
+	AL,
+	JFALSE,
+	JTRUE,
 	MOVE,
+	MOVEAL,
 	TABLE,
 	ADD,
 	SUB,
@@ -84,5 +92,6 @@ void push_stack(vm_env* vm_p, r_value r_v);
 void push_local(vm_env* vm_p, r_value r_v);
 void push_global(vm_env* vm_p, r_value r_v);
 r_value pop_data(d_data* d_ptr);
+void push_data(d_data* d_ptr, r_value r_v);
 
 #endif

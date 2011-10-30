@@ -93,6 +93,16 @@ void push_inst(c_inst* code_ptr, alex_inst a_i)
 	code_ptr->root_ptr[(code_ptr->inst_len)++] = a_i;
 }
 
+
+void push_data(d_data* d_ptr, r_value r_v)
+{
+	if(d_ptr==NULL)
+		return;
+
+	relloc_data(d_ptr, DATA_MEM_LEN);
+	d_ptr->root_ptr[d_ptr->data_len++] = r_v;
+}
+
 r_value pop_data(d_data* d_ptr)
 {
 	r_value  r_v = {0};
