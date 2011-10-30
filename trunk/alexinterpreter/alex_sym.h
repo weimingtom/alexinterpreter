@@ -83,5 +83,6 @@ st new_num_st(char* name, ALEX_NUMBER tn_v);
 st new_str_st(char* name, ALEX_STRING tn_s);
 
 r_value new_number(ALEX_NUMBER num);
+r_value new_addr(int addr);
 
 #endif

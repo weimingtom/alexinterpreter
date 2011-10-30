@@ -230,6 +230,15 @@ st new_str_st(char* name, ALEX_STRING tn_s)
 	return r_t;
 }
 
+r_value new_addr(int addr)
+{
+	r_value ret = {0};
+	ret.r_t = sym_type_addr;
+	ret.r_v.addr = addr;
+
+	return ret;
+}
+
 r_value new_number(ALEX_NUMBER num)
 {
 	r_value ret = {0};
