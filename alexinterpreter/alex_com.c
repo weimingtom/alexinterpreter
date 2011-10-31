@@ -350,7 +350,10 @@ int com_exp(com_env* com_p, tree_node* t_n)
 		check_com(com_ass(com_p, t_n));
 		break;
 	case bnf_type_logic:
+		check_com(com_op_logic(com_p, t_n));
+		break;
 	case bnf_type_value:
+		check_com(com_op_value(com_p, t_n));
 		break;
 	case bnf_type_al:
 		check_com(com_al_v(com_p, t_n));
@@ -369,9 +372,131 @@ int com_exp(com_env* com_p, tree_node* t_n)
 	return COM_SUCCESS;
 }
 
-int	com_op(com_env* com_p, tree_node* t_n)
+int com_op_value(com_env* com_p, tree_node* t_n)
 {
+	switch(t_n->b_v.op_t)
+	{
+	case token_type_mod:		// %
+	case token_type_div:		// /
+	case token_type_mul:		// *
+	case token_type_sub:		// -
+	case token_type_add:		// +
+		{
+			if(t_n->childs_p[0]==NULL)
+			{
+				print("com[error line: %d]  oper \"%s\" not find left value!\n", t_n->line, alex_get_type(t_n->b_v.op_t));
+				return COM_ERROR_NOT_EXP;
+			}
+			else if(t_n->childs_p[1]==NULL)
+			{
+				print("com[error line: %d] oper \"%s\" not find left value!\n", t_n->line, alex_get_type(t_n->b_v.op_t));
+				return COM_ERROR_NOT_EXP;
+			}
+			
+			check_com(com_exp(com_p, t_n->childs_p[0]));
+			check_com(com_exp(com_p, t_n->childs_p[1]));
+			push_inst( &com_p->com_inst, new_inst(ADD+(t_n->b_v.op_t-token_type_add)) );
+		}
+		break;
+	case token_type_sadd:		//++
+	case token_type_ssub:		//--
+		{
+			check_com(com_op_one(com_p, t_n));
+		}
+		break;
+	default:
+		print("inter[error line %d]: oper \"%s\" is not exit!\n", t_n->line, alex_get_type(t_n->b_v.op_t));
+		return COM_ERROR_NOT_EXP;
+	}
+	return	COM_SUCCESS;
+}
+
+// Ò»Ôª²Ù×÷·û
+int com_op_one(com_env* com_p, tree_node* t_n)
+{
+	tree_node* l_t_n = t_n->childs_p[0];
+	tree_node* r_t_n = t_n->childs_p[1];
+	tree_node* o_t_n = NULL;
+
+	if( (l_t_n==NULL && r_t_n==NULL)||(l_t_n!=NULL && r_t_n!=NULL) )
+	{
+		print("com[error line: %d] oper \"%s\" is not find operValue!\n", t_n->line, alex_get_type(t_n->b_v.op_t));
+		return COM_ERROR_NOT_EXP;
+	}
 	
+	o_t_n = (l_t_n==NULL)?(r_t_n):(l_t_n);
+
+	switch(t_n->b_v.op_t)
+	{
+	case token_type_sadd:
+		{
+			
+		}
+		break;
+	case token_type_ssub:
+		break;
+	}
+
+	return COM_SUCCESS;
+}
+
+
+
+int	com_op_logic(com_env* com_p, tree_node* t_n)
+{
+	// check left and right value
+	if(t_n->childs_p[0]==NULL)		// left exp
+	{
+		print("com[error line: %d] not find left value!\n", t_n->line);
+		return COM_ERROR_NOT_EXP;
+	}
+	else if(t_n->childs_p[1]==NULL)
+	{
+		print("com[error line: %d] not find right value!\n", t_n->line);
+		return COM_ERROR_NOT_EXP;
+	}
+
+	check_com(com_exp(com_p, t_n));
+	check_com(com_exp(com_p, t_n));
+	
+	switch(t_n->b_v.op_t)
+	{
+	case token_type_and:
+		push_inst(&com_p->com_inst, new_inst(AND));
+		break;
+	case token_type_or:
+		push_inst(&com_p->com_inst, new_inst(OR));
+		break;
+	case token_type_big:
+		push_inst(&com_p->com_inst, new_inst(BIG));
+		break;
+	case token_type_bige:
+		push_inst(&com_p->com_inst, new_inst(BIGE));
+		break;
+	case token_type_lit:
+		push_inst(&com_p->com_inst, new_inst(LIT));
+		break;
+	case token_type_lite:
+		push_inst(&com_p->com_inst, new_inst(LITE));
+		break;
+	case token_type_equ:
+		push_inst(&com_p->com_inst, new_inst(EQU));
+		break;
+	case token_type_nequ:
+		push_inst(&com_p->com_inst, new_inst(NEQU));
+		break;
+	default:
+		print("com[error line: %d] error op!\n", t_n->line);
+		return COM_ERROR_OTHER;
+	}
+
+	return COM_SUCCESS;
+}
+
+
+int com_op_value(com_env* com_p, tree_node* t_n)
+{
+	return COM_SUCCESS;
 }
 
 int com_aldef(com_env* com_p, tree_node* t_n)
