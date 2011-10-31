@@ -30,8 +30,12 @@ enum _inst
 	MOD,
 	AND,
 	OR,
-	NOT,
+	BIG,
+	BIGE,
+	LIT,
+	LITE,
 	EQU,
+	NEQU,
 	CALL,
 	JUMP,
 	RET
