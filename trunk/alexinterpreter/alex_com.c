@@ -417,6 +417,7 @@ int com_op_one(com_env* com_p, tree_node* t_n)
 	tree_node* l_t_n = t_n->childs_p[0];
 	tree_node* r_t_n = t_n->childs_p[1];
 	tree_node* o_t_n = NULL;
+	r_addr r_a = {0};
 
 	if( (l_t_n==NULL && r_t_n==NULL)||(l_t_n!=NULL && r_t_n!=NULL) )
 	{
@@ -425,12 +426,45 @@ int com_op_one(com_env* com_p, tree_node* t_n)
 	}
 	
 	o_t_n = (l_t_n==NULL)?(r_t_n):(l_t_n);
+	if(type_tree(o_t_n)!= bnf_type_var && type_tree(o_t_n)!=bnf_type_al)
+	{
+		print("com[error line: %d] the oper \"%s\" value is not var!\n", t_n->line, alex_get_type(t_n->b_v.op_t));
+		return COM_ERROR_NOT_EXP;
+	}
+	else
+	{
+		r_a = search_addr(com_p, o_t_n->b_v.name.s_ptr);
+		if(r_a.gl== COM_ERROR)
+		{
+			print("com[error line: %d] not find var \"%s\" !\n", t_n->line, o_t_n->b_v.name.s_ptr);
+			return COM_ERROR_NOT_FIND_IDE;
+		}
+	}
+
+	if
 
 	switch(t_n->b_v.op_t)
 	{
 	case token_type_sadd:
 		{
-			
+			if(l_t_n)		// ǰ׺
+			{
+				if(type_tree(l_t_n)==bnf_type_var)
+				{
+					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+					push_inst(&com_p->com_inst, new_inst(ADD));
+					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
+					push_inst(&com_p->com_inst, new_inst(POP));
+				}
+				else if(type_tree(l_t_n)==bnf_type_al)
+				{
+					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					check_com(com_al_v(com_p, l_t_n));
+					
+				}
+			}
 		}
 		break;
 	case token_type_ssub:
@@ -493,11 +527,6 @@ int	com_op_logic(com_env* com_p, tree_node* t_n)
 	return COM_SUCCESS;
 }
 
-
-int com_op_value(com_env* com_p, tree_node* t_n)
-{
-	return COM_SUCCESS;
-}
 
 int com_aldef(com_env* com_p, tree_node* t_n)
 {
