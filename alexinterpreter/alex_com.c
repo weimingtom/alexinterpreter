@@ -41,12 +41,8 @@ char* com_str[] = {
 	"MOVEAL",		
 	"MOVEREG",	
 	"TABLE",		
-	"ADD",		
-	"B_SADD",
-	"E_SADD",
-	"SUB",		
-	"B_SSUB",
-	"E_SSUB",
+	"ADD",	
+	"SUB",	
 	"MUL",		
 	"DEV",		
 	"MOD",		
@@ -166,11 +162,7 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 	check_com(com_seg(com_p, seg_t_n));
 
 	// if the function is not return, so assume is number 0
-	if(com_p->var_table.temp_reg[COM_REG_RET] == 0)
-		check_com(com_return_assume(com_p, t_n));
-	else
-		com_p->var_table.temp_reg[COM_REG_RET] = 1;
-
+	check_com(com_return_assume(com_p, t_n));
 	return COM_SUCCESS;
 }
 
