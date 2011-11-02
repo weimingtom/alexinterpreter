@@ -1,9 +1,94 @@
 #include "alex_com.h"
 #include "alex_vm.h"
+#include "alex_log.h"
+#include <stdlib.h>
 
 
 com_env* com_env_p = NULL;
 
+char* sym_str[] = {
+	"sym_type_error",
+	"num",
+	"string",
+	"func",
+	"reg_func",	// reg func
+	"al",
+	"alp",
+	"pointer",
+	"addr",
+	"arg_num"
+};
+
+char* gl_str[] = {
+	"COM_ERROR",	
+	"COM_GLOBAL",
+	"COM_LOCAL",	
+	"COM_VALUE",
+	"COM_POINT",
+	"COM_REG"
+};
+
+char* com_str[] = {
+	"END",		
+	"PUSH",		
+	"PUSHVAR",	
+	"POP",		
+	"NEWAL",		
+	"AL",			
+	"JFALSE",		
+	"JTRUE",		
+	"MOVE",		
+	"MOVEAL",		
+	"MOVEREG",	
+	"TABLE",		
+	"ADD",		
+	"B_SADD",
+	"E_SADD",
+	"SUB",		
+	"B_SSUB",
+	"E_SSUB",
+	"MUL",		
+	"DEV",		
+	"MOD",		
+	"AND",		
+	"OR",			
+	"BIG",		
+	"BIGE",		
+	"LIT",		
+	"LITE",		
+	"EQU",		
+	"NEQU",		
+	"CALL",		
+	"JUMP",		
+	"RET"				
+};
+
+s_addr* top_s_addr(addr_data* a_d);
+addr_data* relloc_s_addr(addr_data* a_d, int a_len);
+int com_func_def(com_env* com_p, tree_node* t_n);
+int com_func_call(com_env* com_p, tree_node* t_n);
+int com_arg_def(com_env* com_p, tree_node* t_n);
+int com_seg(com_env* com_p, tree_node* t_n);
+int com_return_assume(com_env* com_p, tree_node* t_n);
+int com_return(com_env* com_p, tree_node* t_n);
+int com_break(com_env* com_p, tree_node* t_n);
+int com_continue(com_env* com_p, tree_node* t_n);
+int com_if(com_env* com_p, tree_node* t_n);
+int com_while(com_env* com_p, tree_node* t_n);
+int com_exp_stmt(com_env* com_p, tree_node* t_n);
+int com_exp(com_env* com_p, tree_node* t_n);
+int com_arg(com_env* com_p, tree_node* t_n);
+int com_ass(com_env* com_p, tree_node* t_n);
+int	com_op_logic(com_env* com_p, tree_node* t_n);
+int com_op_value(com_env* com_p, tree_node* t_n);
+int com_op_one(com_env* com_p, tree_node* t_n);
+int com_aldef(com_env* com_p, tree_node* t_n);
+void add_back_addr(s_addr* s_a, int b_addr);
+void push_s_addr(addr_data* a_d, s_addr s_a);
+s_addr new_s_addr(int addr);
+int pop_s_addr(addr_data* a_d);
+void free_s_addr(s_addr* s_p);
+void clear_local_addr(com_env* com_p);
 
 
 com_env* new_com_env()
@@ -12,7 +97,9 @@ com_env* new_com_env()
 	memset(ret_c_e_p, 0, sizeof(com_env));
 
 	relloc_code(&(ret_c_e_p->com_inst));
-	ret_c_e_p->var_table.g_table = &global_table;
+	ret_c_e_p->var_table.g_table = global_table;
+	relloc_global(&ret_c_e_p->var_table.global_ptr);
+
 	ret_c_e_p->var_table.g_top=0;
 
 	ret_c_e_p->var_table.l_table = new_table();
@@ -23,14 +110,14 @@ com_env* new_com_env()
 } 
 
 // 编译code入口 main_tree为执行调用代码 func_tree为函数链表
-void alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
+int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 {
 	if(main_tree == NULL)
-		return;
+		return	COM_ERROR_OTHER;;
 	 
 	while(func_tree)
 	{
-		com_func_def(com_p, func_tree);
+		check_com(com_func_def(com_p, func_tree));
 		func_tree = func_tree->next;
 	}
 
@@ -40,22 +127,24 @@ void alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 		{
 		case bnf_type_vardef:
 			{
-				com_g_vardef(com_p, main_tree);
+				check_com(com_g_vardef(com_p, main_tree));
 			}
 			break;
 		case bnf_type_funccall:
 			{
-				com_func_call(com_p, main_tree);
+				check_com(com_func_call(com_p, main_tree));
 			}
 			break;
 		default:
 			{
 				print("com[error line %d]: the g_code not allow!\n", main_tree->line);
 			}
-			return;
+			return	COM_ERROR_OTHER;
 		}
 		main_tree = main_tree->next;
 	}
+
+	return COM_SUCCESS;
 }
 
 
@@ -63,7 +152,16 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 {
 	tree_node* arg_t_n = t_n->childs_p[0];
 	tree_node* seg_t_n = t_n->childs_p[1];
-
+	int now_addr = now_inst_addr(com_p);
+	r_addr r_a = {0};
+	clear_local_addr(com_p);
+	r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
+	if(r_a.gl == COM_ERROR)
+	{
+		print("com[error line: %d] not find func:\"%s\" at globle!\n", t_n->line, t_n->b_v.name.s_ptr);
+		return COM_ERROR_NOT_FIND_IDE;
+	}
+	com_p->var_table.global_ptr.root_ptr[r_a.addr] = new_addr(now_addr);		// write the func addr!
 	check_com(com_arg_def(com_p, arg_t_n));
 	check_com(com_seg(com_p, seg_t_n));
 
@@ -295,7 +393,7 @@ int com_func_call(com_env* com_p, tree_node* t_n)
 	{
 		ret_st = look_com(com_p, t_n->b_v.name.s_ptr);
 		check_com(com_arg(com_p, t_n));	
-		push_inst(&com_p->com_inst, new_inst(CALL, r_a.gl, r_addr));
+		push_inst(&com_p->com_inst, new_inst(CALL, r_a.gl, r_a.addr));
 	}
 	
 	return COM_SUCCESS;
@@ -304,7 +402,7 @@ int com_func_call(com_env* com_p, tree_node* t_n)
 
 int com_arg(com_env* com_p, tree_node* t_n)
 {
-	tree_node* t_n = t_n->childs_p[0];
+	t_n = t_n->childs_p[0];
 
 	while(t_n)
 	{
@@ -414,6 +512,7 @@ int com_op_value(com_env* com_p, tree_node* t_n)
 // 一元操作符
 int com_op_one(com_env* com_p, tree_node* t_n)
 {
+	e_alex_inst e_i = END;
 	tree_node* l_t_n = t_n->childs_p[0];
 	tree_node* r_t_n = t_n->childs_p[1];
 	tree_node* o_t_n = NULL;
@@ -441,11 +540,14 @@ int com_op_one(com_env* com_p, tree_node* t_n)
 		}
 	}
 
-	if
-
 	switch(t_n->b_v.op_t)
 	{
 	case token_type_sadd:
+		e_i = ADD;
+		goto OP_ONE;
+	case token_type_ssub:
+		e_i = SUB;
+OP_ONE:
 		{
 			if(l_t_n)		// 前缀
 			{
@@ -454,21 +556,46 @@ int com_op_one(com_env* com_p, tree_node* t_n)
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
-					push_inst(&com_p->com_inst, new_inst(ADD));
+					push_inst(&com_p->com_inst, new_inst(e_i));
 					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(POP));
 				}
 				else if(type_tree(l_t_n)==bnf_type_al)
 				{
 					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
-					check_com(com_al_v(com_p, l_t_n));
-					
+					check_com(com_al_v(com_p, l_t_n));		// push al value
+					push_inst(&com_p->com_inst, new_inst(MOVEREG, new_addr(REG_AX)));		// al[inx] 的值移动到寄存器AX
+					push_inst(&com_p->com_inst, new_inst(e_i));
+					check_com(com_al_p(com_p, l_t_n));
+					push_inst(&com_p->com_inst, new_inst(MOVEAL));
+					push_inst(&com_p->com_inst, new_inst(POP));
+					push_inst(&com_p->com_inst, new_inst(PUSHVAR, COM_REG, new_addr(REG_AX)));
+				}
+			}
+			else if(r_t_n)		// 后缀
+			{
+				
+				if(type_tree(l_t_n)==bnf_type_var)
+				{
+					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+					push_inst(&com_p->com_inst, new_inst(e_i));
+					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
+				}
+				else if(type_tree(l_t_n)==bnf_type_al)
+				{
+					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					check_com(com_al_v(com_p, l_t_n));		// push al value
+					push_inst(&com_p->com_inst, new_inst(e_i));
+					check_com(com_al_p(com_p, l_t_n));
+					push_inst(&com_p->com_inst, new_inst(MOVEAL));
 				}
 			}
 		}
 		break;
-	case token_type_ssub:
-		break;
+	default:
+		print("com[error line: %d] Serious error , the op not know!\n", t_n->line);
+		return COM_ERROR_OTHER;
 	}
 
 	return COM_SUCCESS;
@@ -599,7 +726,7 @@ int com_ass(com_env* com_p, tree_node* t_n)
 			r_addr r_a = search_addr(com_p, l_t_n->b_v.name.s_ptr);
 			if(r_a.gl == COM_ERROR)
 			{
-				print("com[error line: %d] the ide \"%s\" not define! \n", t_n->line, t_n->b_v.name.s_ptr);
+				print("com[error line: %d] the ide \"%s\" not define! \n", t_n->line, l_t_n->b_v.name.s_ptr);
 				return COM_ERROR_NOT_FIND_IDE;
 			}
 
@@ -617,7 +744,7 @@ int com_ass(com_env* com_p, tree_node* t_n)
 		}
 		break;
 	default:
-		print("com[error line: %d] the ide can not left value!\n", t_n->line);
+		print("com[error line: %d] the ide \"%s\" can not left value!\n", t_n->line, l_t_n->b_v.name.s_ptr);
 		return COM_ERROR_NOT_LEFT_VALUE;
 	}
 
@@ -635,19 +762,29 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 		char* var_name = NULL;
 		switch(type_tree(t_n))
 		{
-		case bnf_type_ass:
-			check_com(com_ass(com_p, t_n));
-			push_inst(&com_p->com_inst, new_inst(POP));
-			break;
 		case bnf_type_var:
-			var_name = t_n->b_v.name.s_ptr;
-			if(look_table(a_table, var_name))
+				var_name = t_n->b_v.name.s_ptr;
+				if(look_table(a_table, var_name))
+				{
+					print("com[error line: %d] the var  \"%s\" ide is redefine!\n", t_n->line, var_name);
+					return COM_ERROR_REDEF;
+				}
+				else
+					add_new_table(a_table, var_name);
+			break;
+		case bnf_type_ass:
 			{
-				print("com[error line: %d] the var  \"%s\" ide is redefine!\n", t_n->line, var_name);
-				return COM_ERROR_REDEF;
+				var_name = t_n->childs_p[0]->b_v.name.s_ptr;
+				if(look_table(a_table, var_name))
+				{
+					print("com[error line: %d] the var  \"%s\" ide is redefine!\n", t_n->line, var_name);
+					return COM_ERROR_REDEF;
+				}
+				else
+					add_new_table(a_table, var_name);
+				check_com(com_ass(com_p, t_n));
+				push_inst(&com_p->com_inst, new_inst(POP));
 			}
-			else
-				add_new_table(a_table, var_name);
 			break;
 		default:
 			print("inter[error line %d] at var def the  tree_node \"%s\" no allow!\n", t_n->line, string_bnf(t_n->b_t));
@@ -655,8 +792,9 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 		}
 		t_n = t_n->next;
 	}
-}
 
+	return COM_SUCCESS;
+}
 
 
 void clear_local_addr(com_env* com_p)
@@ -687,7 +825,6 @@ r_addr com_addr(com_env* com_p, char* name, e_gl gl)
 		if(r_st==NULL)
 		{
 			r_st = add_new_table(com_p->var_table.g_table, name);
-			r_st->st_addr = com_p->var_table.g_top++;
 		}
 		ret.addr = r_st->st_addr;	
 	}
@@ -697,7 +834,6 @@ r_addr com_addr(com_env* com_p, char* name, e_gl gl)
 		if(r_st==NULL)
 		{
 			r_st = add_new_table(com_p->var_table.l_table, name);
-			r_st->st_addr = com_p->var_table.l_top++;
 		}
 		ret.addr = r_st->st_addr;
 	}	
@@ -737,7 +873,7 @@ r_addr search_addr(com_env* com_p, char* name)
 		r_st = look_table(com_p->var_table.g_table, name);
 		if(r_st)
 		{
-			ret.gl = COM_LOCAL;
+			ret.gl = COM_GLOBAL;
 			ret.addr = r_st->st_addr;
 		}
 	}
@@ -771,21 +907,106 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 			a_i.inst_value.r_t = sym_type_num;
 		}
 		break;
+	case MOVEREG:
 	case PUSH:
 		{
-			a_i.inst_value = (r_value)va_arg(arg_list, r_value);
+			a_i.inst_value = va_arg(arg_list, r_value);
 		}
 		break;
 	case JFALSE:
 	case JTRUE:
 		{
-			a_i.inst_value = (r_value)va_arg(arg_list, r_value);
+			a_i.inst_value = va_arg(arg_list, r_value);
 		}
 		break;
 	}
-	va_end(a_i);
+	va_end(arg_list);
 
 	return a_i;
+}
+
+int com_print_inst_type(alex_inst a_i, int pc)
+{
+	if(a_i.inst_type >= (ubyte)INST_COUNT)
+	{
+		print("\nasm[error pc: %d] the inst_type[%d] is over!\n", pc, a_i.inst_type);
+		return COM_ERROR_OTHER;
+	}
+	
+	print(" %10s  ", com_str[a_i.inst_type]);
+	return	COM_SUCCESS;
+}
+
+int com_print_inst_gl(alex_inst a_i, int pc)
+{
+	if(a_i.gl >= (ubyte)COM_GL_COUNT)
+	{
+		print("\nasm[error pc: %d] the inst_gl[%d] is over!\n", pc, a_i.gl);
+		return COM_ERROR_OTHER;
+	}
+	
+	if(a_i.gl)
+		print(" %10s  ", gl_str[a_i.gl]);
+	return COM_SUCCESS;
+}
+
+int com_print_inst_value(alex_inst a_i, int pc)
+{
+	switch(a_i.inst_value.r_t)
+	{
+	case sym_type_num:
+		print(" %10lf	", a_i.inst_value.r_v.num);
+		break;
+	case sym_type_string:
+		print(" %10s	", a_i.inst_value.r_v.str.s_ptr);
+		break;
+	case sym_type_reg_func:
+	case sym_type_func:
+		print(" %10p	", a_i.inst_value.r_v.func);
+		break;
+	case sym_type_al:
+		print(" %10p	", a_i.inst_value.r_v.al);
+		break;
+	case sym_type_alp:
+		print(" %10p	", a_i.inst_value.r_v.ptr);
+		break;
+	case sym_type_pointer:
+		print(" %10p	", a_i.inst_value.r_v.ptr);
+		break;
+	case sym_type_addr:
+		print(" %10d	", a_i.inst_value.r_v.addr);
+		if(a_i.inst_type == CALL)
+		{
+			print("; func addr = [%d] ", com_env_p->var_table.global_ptr.root_ptr[a_i.inst_value.r_v.addr].r_v.addr);
+			return COM_SUCCESS;
+		}
+		break;
+	case sym_type_arg_num:
+		print(" %10d	", a_i.inst_value.r_v.arg_num);
+		break;
+	
+	case sym_type_error:
+		break;
+
+	default:
+		print("\nasm[error pc: %d] the sym type[%d] is over!\n", pc, a_i.inst_value.r_t);
+		return COM_ERROR_OTHER;
+	}
+
+	if(a_i.inst_value.r_t)
+		print(" ; type is:%s", sym_str[a_i.inst_value.r_t]);
+	return COM_SUCCESS;
+}
+
+int com_print_inst(alex_inst a_i, int pc)
+{
+	print("[%d]  ", pc);
+	check_com(com_print_inst_type(a_i, pc));
+	check_com(com_print_inst_gl(a_i, pc));
+	check_com(com_print_inst_value(a_i, pc));
+
+	print("\n");
+	return COM_SUCCESS;
 }
 
 addr_data* relloc_s_addr(addr_data* a_d, int a_len)
@@ -811,7 +1032,7 @@ void push_s_addr(addr_data* a_d, s_addr s_a)
 	if(a_d==NULL)
 		return;
 	
-	relloc_s_addr(a_d);
+	relloc_s_addr(a_d, CALL_MEM_LEN);
 	a_d->root_ptr[a_d->addr_len++] = s_a;
 }
 
@@ -881,3 +1102,23 @@ void add_back_addr(s_addr* s_a, int b_addr)
 	s_a->back_addr_head = new_node;
 }
 
+
+
+
+int com_print(com_env* com_p)
+{
+	int i=0;
+
+	if(com_p==NULL)
+	{
+		print("com_p==NULL !\n");
+		return COM_ERROR_OTHER;
+	}
+
+	print("; COM ASM CODE :\n");
+	for(i=0; i<com_p->com_inst.inst_len; i++)
+	{
+		check_com(com_print_inst(com_p->com_inst.root_ptr[i], i));
+	}
+	return COM_SUCCESS;
+}

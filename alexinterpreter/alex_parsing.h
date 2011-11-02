@@ -52,6 +52,8 @@ typedef struct _main_tree{
 
 extern byte error_flag;
 extern main_tree m_tree;
+extern main_tree f_tree;
+
 
 #define string_bnf(inx)		((inx>=bnf_type_count || inx <0)?("bnf_type_error"):(bnf_type_str[inx]) )
 

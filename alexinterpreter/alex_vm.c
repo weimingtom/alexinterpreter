@@ -4,8 +4,12 @@
 
 #include "alex_vm.h"
 #include "stdlib.h"
+#include "alex_log.h"
+
 
 vm_env alex_vm = {0};
+
+
 
 // ³õÊ¼»¯ÐéÄâ»ú
 vm_env* init_vm_env()
@@ -98,7 +102,7 @@ void push_data(d_data* d_ptr, r_value r_v)
 {
 	if(d_ptr==NULL)
 		return;
-
+	
 	relloc_data(d_ptr, DATA_MEM_LEN);
 	d_ptr->root_ptr[d_ptr->data_len++] = r_v;
 }
@@ -142,7 +146,7 @@ void push_stack(vm_env* vm_p, r_value r_v)
 int push_local(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)
-		return;
+		return -1;
 	
 	relloc_local(&vm_p->local_ptr);
 	vm_p->local_ptr.root_ptr[(vm_p->local_ptr.data_len)] = r_v;
@@ -155,7 +159,7 @@ int push_local(vm_env* vm_p, r_value r_v)
 int push_global(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)
-		return;
+		return -1;
 	
 	relloc_global(&vm_p->global_ptr);
 	vm_p->global_ptr.root_ptr[(vm_p->global_ptr.data_len)] = r_v;
@@ -167,7 +171,7 @@ int push_global(vm_env* vm_p, r_value r_v)
 int push_call(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)
-		return;
+		return -1;
 	
 	relloc_global(&vm_p->call_ptr);
 	vm_p->call_ptr.root_ptr[(vm_p->call_ptr.data_len)] = r_v;

@@ -15,20 +15,23 @@ void  alex_init()
 		free_table(global_table);
 
 	global_table = new_table();
+	com_env_p = new_com_env();	
 	alex_reg_lib(global_table);
 }
 
 int  alex_run(char* file)
 {
 	int ret = 0;
-	inter_env env = new_inter_env();
-	com_env_p = new_com_env();	
+//	inter_env env = new_inter_env();
 	tree_node* t_n = NULL;
 
-	(file==NULL)?(return 0):(0);
+	if (file==NULL) return 0;
 	alex_load_file(file);
-	(alex_parsing(&t_l)==NULL)?(return 0):(0);
+	if (alex_parsing(&t_l)==NULL) return 0;
 	
+	if(alex_com(com_env_p, m_tree.head, f_tree.head)==COM_SUCCESS)
+		com_print(com_env_p);
+
 	print("\n\n -----CONSEL-----\n");
 //	alex_interpret(env, m_tree.head);
 	
@@ -45,7 +48,7 @@ void alex_free()
 int main(int arg, char* arg_list[])
 {
 	alex_init();
-	alex_run("F:\\code\\alex\\tt.alx");
+	alex_run("F:\\code\\alex\\ts.alx");
 	getchar();
 	return 0;
 }
