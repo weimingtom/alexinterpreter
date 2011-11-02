@@ -31,7 +31,7 @@ int  alex_run(char* file)
 	
 	if(alex_com(com_env_p, m_tree.head, f_tree.head)==COM_SUCCESS)
 		com_print(com_env_p);
-
+	
 	print("\n\n -----CONSEL-----\n");
 //	alex_interpret(env, m_tree.head);
 	
@@ -48,7 +48,7 @@ void alex_free()
 int main(int arg, char* arg_list[])
 {
 	alex_init();
-	alex_run("F:\\code\\alex\\ts.alx");
+	alex_run(".\\ts.alx");
 	getchar();
 	return 0;
 }
