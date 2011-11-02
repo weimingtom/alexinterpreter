@@ -1,0 +1,9 @@
+function sum(var a, var b)
+{
+	if(a > b)
+		return a+b;
+	else
+		return a-b;
+}
+
+sum(11, 22);
