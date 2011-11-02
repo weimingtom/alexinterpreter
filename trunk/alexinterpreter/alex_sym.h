@@ -15,7 +15,9 @@ enum sym_type{
 	sym_type_alp,
 	sym_type_pointer,
 	sym_type_addr,
-	sym_type_arg_num
+	sym_type_arg_num,
+
+	sym_type_count
 };
 
 

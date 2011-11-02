@@ -5,6 +5,7 @@
 #include "alex_log.h"
 #include "alex_parsing.h"
 #include "alex_arrylist.h"
+#include "alex_com.h"
 #include <memory.h>
 // 符号表 操作
 
@@ -68,7 +69,13 @@ st* add_table(sym_table* s_t, st st_v)
 		st_v.s_v.al->count++;
 
 	//  进行编译地址赋值
-	st_v.st_addr = (s_t==global_table)?(com_env_p->var_table.g_top++):(com_env_p->var_table.l_top++);
+	if (s_t==global_table)
+	{
+		push_data(&com_env_p->var_table.global_ptr, new_number(0));
+		st_v.st_addr = com_env_p->var_table.global_ptr.data_len - 1;
+	}
+	else
+		st_v.st_addr = (com_env_p->var_table.l_top++);
 	(*st_w)->st_v = st_v;
 	
 	return &((*st_w)->st_v);

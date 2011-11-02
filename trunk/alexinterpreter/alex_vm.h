@@ -8,41 +8,53 @@
 #define GLOBAL_MEM_LEN	64			// 默认全局堆栈数据段
 #define CALL_MEM_LEN	256			// 默认函数调用堆栈数据段
 
+enum _e_register{
+	REG_AX,
+	REG_BX,
+	REG_CX,
+	REG_SP,
+
+	REG_LEN
+}e_register;
+
 #define NULL_ADDR		(-1)
 
-enum _inst
+typedef enum _inst
 {
-	END,							//结束指令
-	PUSH,
-	PUSHVAR,
-	POP,
-	NEWAL,
-	AL,
-	JFALSE,
-	JTRUE,
-	MOVE,
-	MOVEAL,
-	TABLE,
-	ADD,
+	END,							// 结束指令
+	PUSH,							// 向栈顶PUSH进去一个常量
+	PUSHVAR,						// 向栈顶写入一个变量
+	POP,							// 弹出栈顶数据
+	NEWAL,							// 创建一个数组
+	AL,								// 获取一个数组中的某个组员
+	JFALSE,							// 如果为假则跳转
+	JTRUE,							// 如果为真则跳转
+	MOVE,							// 将栈顶的数据写入变量中
+	MOVEAL,							// 将栈顶的数据写入数组组员中
+	MOVEREG,						// 将栈顶的数据写入寄存器中
+	TABLE,							// 
+	ADD,							// +
 	B_SADD,
 	E_SADD,
-	SUB,
+	SUB,							// -
 	B_SSUB,
 	E_SSUB,
-	MUL,
-	DEV,
-	MOD,
-	AND,
-	OR,
-	BIG,
-	BIGE,
-	LIT,
-	LITE,
-	EQU,
-	NEQU,
-	CALL,
-	JUMP,
-	RET
+	MUL,							// *
+	DEV,							// /
+	MOD,							// %
+	AND,							// &&
+	OR,								// ||
+	BIG,							// >
+	BIGE,							// >=
+	LIT,							// <
+	LITE,							// <=
+	EQU,							// ==
+	NEQU,							// !=
+	CALL,							// 函数调用
+	JUMP,							// 跳转
+	RET,							// return
+	
+	INST_COUNT
 }e_alex_inst;
 
 
@@ -73,6 +85,7 @@ typedef struct _vm_env
 	c_inst		code_ptr;	// 代码段指针				
 	int			pc;			// 程序计数器
 
+	r_value		reg[REG_LEN];// 寄存器
 	d_data		data_ptr;	// 数据堆栈段指针
 	int			top;		// 数据段堆栈指针		
 
@@ -97,8 +110,8 @@ void free_vm_evn(vm_env* vm_p);
 
 void push_inst(c_inst* code_ptr, alex_inst a_i);
 void push_stack(vm_env* vm_p, r_value r_v);
-void push_local(vm_env* vm_p, r_value r_v);
-void push_global(vm_env* vm_p, r_value r_v);
+int push_local(vm_env* vm_p, r_value r_v);
+int push_global(vm_env* vm_p, r_value r_v);
 r_value pop_data(d_data* d_ptr);
 void push_data(d_data* d_ptr, r_value r_v);
 

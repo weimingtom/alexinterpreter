@@ -97,15 +97,15 @@ tree_node* alex_parsing(token_list* t_lt)
 				r_tn = syn_func_def(t_lt);
 				if(r_tn)
 				{
-					if(look_table(&global_table, r_tn->b_v.name))
+					if(look_table(global_table, r_tn->b_v.name.s_ptr)==NULL)
 					{
 						st* r_st = add_g_table(new_func_st(r_tn->b_v.name.s_ptr, r_tn));
 						add_func(r_tn);
 					}
 					else
 					{
-						free_tree(r_tn);
 						print("parsing[erro line %d]: the function %s is redef!\n", tk_p->token_line, r_tn->b_v.name.s_ptr);
+						free_tree(r_tn);
 						return NULL;
 					}
 				}
@@ -290,6 +290,9 @@ tree_node* syn_arg_def(token_list* t_lt)
 		}
 		else
 		{
+			if(type_token(t_lt) == token_type_rbra)
+				return rt_n;
+
 			free(rt_n);
 			rt_n = NULL;
 			break;
