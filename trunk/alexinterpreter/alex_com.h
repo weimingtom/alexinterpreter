@@ -25,6 +25,12 @@ typedef enum _e_e{
 	COM_ERROR_OTHER
 }e_e;
 
+typedef enum _e_reg_{
+	COM_REG_RET,
+
+	COM_RET_LEN
+}e_reg;
+
 typedef enum _e_gl{
 	COM_ERROR,
 
@@ -72,6 +78,8 @@ typedef struct _var_addr{
 	sym_table* l_table;
 	int l_top;
 	
+	int temp_reg[COM_RET_LEN];	// ¡Ÿ ±±‡“Îºƒ¥Ê∆˜
+
 	addr_data addr_ptr;		//¡Ÿ ±µÿ÷∑∂—’ª
 }var_addr;
 

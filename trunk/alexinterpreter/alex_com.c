@@ -166,7 +166,11 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 	check_com(com_seg(com_p, seg_t_n));
 
 	// if the function is not return, so assume is number 0
-	check_com(com_return_assume(com_p, t_n));
+	if(com_p->var_table.temp_reg[COM_REG_RET] == 0)
+		check_com(com_return_assume(com_p, t_n));
+	else
+		com_p->var_table.temp_reg[COM_REG_RET] = 1;
+
 	return COM_SUCCESS;
 }
 
@@ -244,18 +248,19 @@ int com_return(com_env* com_p, tree_node* t_n)
 	t_n = t_n->childs_p[0];
 	if(t_n==NULL)			// not return value
 	{
-		com_return_assume(com_p, t_n);
+		push_inst(&com_p->com_inst, new_inst(RET));
 	}
 	else
 	{
 		check_com(com_exp(com_p, t_n));
 		push_inst(&com_p->com_inst, new_inst(RET));
 	}
-
+	
+	com_p->var_table.temp_reg[COM_REG_RET] = 1;
 	return COM_SUCCESS;
 } 
 
-// when return; or no return
+
 int com_return_assume(com_env* com_p, tree_node* t_n)
 {
 	r_value r_v = new_number(0);
@@ -265,7 +270,6 @@ int com_return_assume(com_env* com_p, tree_node* t_n)
 	
 	return COM_SUCCESS;
 }
-
 
 int com_break(com_env* com_p, tree_node* t_n)
 {
@@ -554,7 +558,7 @@ OP_ONE:
 				if(type_tree(l_t_n)==bnf_type_var)
 				{
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
-					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
@@ -562,7 +566,7 @@ OP_ONE:
 				}
 				else if(type_tree(l_t_n)==bnf_type_al)
 				{
-					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					check_com(com_al_v(com_p, l_t_n));		// push al value
 					push_inst(&com_p->com_inst, new_inst(MOVEREG, new_addr(REG_AX)));		// al[inx] 的值移动到寄存器AX
 					push_inst(&com_p->com_inst, new_inst(e_i));
@@ -577,14 +581,14 @@ OP_ONE:
 				
 				if(type_tree(l_t_n)==bnf_type_var)
 				{
-					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
 				}
 				else if(type_tree(l_t_n)==bnf_type_al)
 				{
-					push_inst(&com_p->com_inst, new_inst(PUSH, 1));
+					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					check_com(com_al_v(com_p, l_t_n));		// push al value
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					check_com(com_al_p(com_p, l_t_n));
@@ -617,8 +621,8 @@ int	com_op_logic(com_env* com_p, tree_node* t_n)
 		return COM_ERROR_NOT_EXP;
 	}
 
-	check_com(com_exp(com_p, t_n));
-	check_com(com_exp(com_p, t_n));
+	check_com(com_exp(com_p, t_n->childs_p[0]));
+	check_com(com_exp(com_p, t_n->childs_p[1]));
 	
 	switch(t_n->b_v.op_t)
 	{
@@ -891,7 +895,6 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 	switch(a_i.inst_type)
 	{
 	case CALL:
-	case JUMP:
 	case AL:
 	case MOVE:
 	case PUSHVAR:
@@ -913,6 +916,7 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 			a_i.inst_value = va_arg(arg_list, r_value);
 		}
 		break;
+	case JUMP:
 	case JFALSE:
 	case JTRUE:
 		{
@@ -993,14 +997,12 @@ int com_print_inst_value(alex_inst a_i, int pc)
 		return COM_ERROR_OTHER;
 	}
 
-	if(a_i.inst_value.r_t)
-		print(" ; type is:%s", sym_str[a_i.inst_value.r_t]);
 	return COM_SUCCESS;
 }
 
 int com_print_inst(alex_inst a_i, int pc)
 {
-	print("[%d]  ", pc);
+	print("[%.3d]  ", pc);
 	check_com(com_print_inst_type(a_i, pc));
 	check_com(com_print_inst_gl(a_i, pc));
 	check_com(com_print_inst_value(a_i, pc));
