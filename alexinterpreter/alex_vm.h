@@ -34,11 +34,7 @@ typedef enum _inst
 	MOVEREG,						// 将栈顶的数据写入寄存器中
 	TABLE,							// 
 	ADD,							// +
-	B_SADD,
-	E_SADD,
 	SUB,							// -
-	B_SSUB,
-	E_SSUB,
 	MUL,							// *
 	DEV,							// /
 	MOD,							// %
