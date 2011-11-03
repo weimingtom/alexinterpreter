@@ -56,6 +56,7 @@ int alex_vm(vm_env* vm_p)
 			}
 			return VM_SUCCESS;
 		case PUSH:
+			vm_push(vm_p, a_i);
 			break;
 		case PUSHVAR:
 			break;
@@ -113,6 +114,49 @@ int vm_add(vm_env* vm_p)
 	
 }
 
+int vm_pushvar(vm_env* vm_p, alex_inst a_i)
+{
+	r_value r_v = {0};
+	check_value(r_v=vm_get_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr));
+	
+	push_data(&vm_p->data_ptr, r_v);
+	return VM_SUCCESS;
+}
+
+
+int vm_push(vm_env* vm_p, alex_inst a_i)
+{
+	push_data(&vm_p->data_ptr, a_i.inst_value);
+	return VM_SUCCESS;
+}
+
+int vm_move(vm_env* vm_p, alex_inst a_i)
+{
+	r_value r_v = {0};
+	
+	return	VM_SUCCESS;
+}
+
+int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
+{
+	if(gl== COM_LOCAL)
+	{
+		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
+			vm_p->local_ptr.root_ptr[vm_p->local_top+addr] = r_v;
+		else
+			return	VM_ERROR;
+	}
+	else if(gl == COM_GLOBAL)
+	{
+		if(addr<vm_p->global_ptr.data_len && addr >=0)
+			vm_p->global_ptr.root_ptr[addr] = r_v;
+		else
+			return VM_ERROR;
+	}
+
+	return VM_SUCCESS;
+}
+
 r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr)
 {
 	r_value ret = {0};
@@ -155,6 +199,27 @@ int vm_call(vm_env* vm_p, alex_inst a_i)
 	return VM_SUCCESS;
 }
 
+
+int vm_ret(vm_env* vm_p, alex_inst a_i)
+{
+	int i=0;
+	r_value pc_value = {0};
+	r_value local_top_value = {0};
+
+	check_value(local_top_value=pop_data(&vm_p->call_ptr));
+	check_value(pc_value=pop_data(&vm_p->call_ptr));
+
+	// resume pc
+	vm_p->pc = pc_value.r_v.addr;
+	// free local stack memory 
+	for(i=vm_p->local_top; i<vm_p->local_ptr.data_len; i++)
+	{
+		pop_data(&vm_p->local_ptr);
+	}
+
+	vm_p->local_top = local_top_value.r_v.addr;
+	return VM_SUCCESS;
+}
 
 int vm_tp(vm_env* vm_p, alex_inst a_i)
 {
@@ -314,6 +379,16 @@ void push_data(d_data* d_ptr, r_value r_v)
 	
 	relloc_data(d_ptr, DATA_MEM_LEN);
 	d_ptr->root_ptr[d_ptr->data_len++] = r_v;
+}
+
+r_value top_data(d_data* d_ptr)
+{
+	r_value ret = {0};
+	
+	if(d_ptr==NULL || d_ptr->data_len<=0)
+		return ret;
+
+	return d_ptr->root_ptr[d_ptr->data_len-1];
 }
 
 r_value pop_data(d_data* d_ptr)

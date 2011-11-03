@@ -14,7 +14,8 @@ enum _e_vm_ret{
 	VM_ERROR,
 	VM_ERROR_PC,
 	VM_ERROR_POP,
-	VM_ERROR_OP_VALUE
+	VM_ERROR_OP_VALUE,
+	VM_ERROR_NOT_IDE
 };
 
 enum _e_register{
