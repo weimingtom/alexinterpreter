@@ -85,7 +85,7 @@ typedef struct _var_addr{
 
 typedef struct _com_env{
 	c_inst	   com_inst;	// compile inst
-	
+	int		   pc;			// 程序入口地址
 	var_addr	var_table;	
 }com_env;
 

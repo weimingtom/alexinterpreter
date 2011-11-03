@@ -7,9 +7,9 @@
 #include "alex_log.h"
 
 
-vm_env alex_vm = {0};
+vm_env alex_vm_env = {0};
 
-
+/*
 
 // 初始化虚拟机
 vm_env* init_vm_env()
@@ -27,6 +27,180 @@ vm_env* init_vm_env()
 	alex_vm.pc=0;
 	
 	return &alex_vm;
+}
+*/
+
+// vm cpu
+int alex_vm(vm_env* vm_p)
+{
+	alex_inst a_i = {0};
+
+	if(vm_p==NULL)
+		return VM_ERROR;
+	
+	for(;;)
+	{
+		if(vm_p->pc<0 || vm_p->pc>=vm_p->code_ptr.inst_len)
+		{
+			print("vm[error addr: %d] Attempts to access a error addr!\n", vm_p->pc);
+			return	VM_ERROR_PC;
+		}
+		
+		a_i = vm_p->code_ptr.root_ptr[vm_p->pc];
+		//	parse inst 
+		switch(vm_p->code_ptr.root_ptr[vm_p->pc].inst_type)
+		{
+		case END:
+			{
+				print("\n\n-----inst success end-----\n\n");
+			}
+			return VM_SUCCESS;
+		case PUSH:
+			break;
+		case PUSHVAR:
+			break;
+		case POP:
+			break;
+		case NEWAL:
+			break;
+		case AL:
+			break;
+		case JFALSE:
+			break;
+		case JTRUE:
+			break;
+		case MOVE:
+			break;
+		case MOVEAL:
+			break;
+		case MOVEREG:
+			break;
+		case TABLE:		// ?
+			break;
+
+		case ADD:
+			break;
+		case SUB:
+		case MUL:
+		case DEV:
+		case MOD:
+		case AND:
+		case OR:
+		case BIG:
+		case BIGE:
+		case LIT:
+		case LITE:
+		case EQU:
+		case NEQU:
+			check_vm(vm_tp(vm_p, a_i));
+			break;
+		case CALL:
+			break;
+		case JUMP:
+			break;
+		case  RET:
+			break;
+		}
+
+		vm_p->pc++;
+	}
+
+	return	VM_ERROR;
+}
+
+int vm_add(vm_env* vm_p)
+{
+	
+}
+
+int vm_call(vm_env* vm_p, alex_inst a_i)
+{
+	next_pc(vm_p);
+	
+	a_i.inst_value.
+}
+
+
+int vm_tp(vm_env* vm_p, alex_inst a_i)
+{
+	r_value l_r_v ={0};
+	r_value r_r_v ={0};
+	r_value ret_value={0};
+
+	check_value(r_r_v=pop_data(&vm_p->data_ptr));
+	check_value(l_r_v=pop_data(&vm_p->data_ptr));
+
+	if(l_r_v.r_t != sym_type_num || r_r_v != sym_type_num)
+	{
+		print("vm[error line: %d] the op value not number!\n", a_i.inst_len);
+		return VM_ERROR_OP_VALUE;
+	}
+
+	switch(a_i.inst_type)
+	{
+	case SUB:
+		ret_value = new_number(l_r_v.r_v.num - r_r_v.r_v.num);
+		break;
+	case MUL:
+		ret_value = new_number(l_r_v.r_v.num * r_r_v.r_v.num);
+		break;
+	case DEV:
+		ret_value = new_number(l_r_v.r_v.num / r_r_v.r_v.num);
+		break;
+	case MOD:
+		ret_value = new_number((int)(l_r_v.r_v.num) % (int)(r_r_v.r_v.num));
+		break;
+	case AND:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) && (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case OR:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) || (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case BIG:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) > (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case BIGE:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) >= (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case LIT:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) < (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case LITE:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) >= (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case EQU:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) == (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	case NEQU:
+		ret_value = new_number( ((int)(l_r_v.r_v.num) != (int)(r_r_v.r_v.num))?(1):(0) );
+		break;
+	default:
+		print("vm[error line: %d] not op inst!\n", a_i.line);
+		return VM_ERROR;
+	}
+
+	push_data(&vm_p->data_ptr,ret_value);
+
+	return VM_SUCCESS;
+}
+
+
+
+// 编译到虚拟机的入口
+vm_env* com_to_vm(com_env* com_p)
+{
+	free_vm_evn(&alex_vm_env);
+	
+	alex_vm_env.code_ptr = com_p->com_inst;			// 传递编译器传过来的汇编指令
+	relloc_stack(&alex_vm_env.data_ptr);
+	relloc_local(&alex_vm_env.data_ptr);
+	relloc_call(&alex_vm_env.call_ptr);
+	alex_vm_env.global_ptr = com_p->var_table.global_ptr;	// 获取编辑器解析的全局变量
+
+	alex_vm_env.local_top = 0;
+	alex_vm_env.pc = com_p->pc;
+
+	return &alex_vm_env;
 }
 
 
