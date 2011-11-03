@@ -117,6 +117,8 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 		func_tree = func_tree->next;
 	}
 
+	// write begin pc
+	com_p->pc = now_inst_addr(com_p);
 	while(main_tree)
 	{
 		switch(type_tree(main_tree))
@@ -139,7 +141,9 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 		}
 		main_tree = main_tree->next;
 	}
-
+	
+	// write end inst
+	push_inst(&com_p->com_inst, new_inst(END));
 	return COM_SUCCESS;
 }
 

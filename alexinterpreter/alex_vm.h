@@ -8,6 +8,15 @@
 #define GLOBAL_MEM_LEN	64			// 默认全局堆栈数据段
 #define CALL_MEM_LEN	256			// 默认函数调用堆栈数据段
 
+
+enum _e_vm_ret{
+	VM_SUCCESS,
+	VM_ERROR,
+	VM_ERROR_PC,
+	VM_ERROR_POP,
+	VM_ERROR_OP_VALUE
+};
+
 enum _e_register{
 	REG_AX,
 	REG_BX,
@@ -59,6 +68,7 @@ typedef struct _alex_inst
 	ubyte inst_type;		// 指令类型
 	ubyte gl;				// global or local?
 	r_value inst_value;		// 指令操作值
+	int line;				// 指令对应的代码行
 }alex_inst;
 
 
@@ -96,8 +106,10 @@ typedef struct _vm_env
 #define relloc_local(d_d)	relloc_data((d_d), LOCAL_MEM_LEN)
 #define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
 #define relloc_call(d_d)	relloc_data((d_d), CALL_MEM_LEN)
-
-extern vm_env alex_vm;
+#define check_value(r_v)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error) return VM_ERROR_POP;}while(0)
+#define check_vm(rt)		do{if(int r=(rt); if(r) return r;}while(0)
+#define next_pc(v_p)		((v_p)->pc++)
+extern vm_env alex_vm_env;
 
 c_inst* relloc_code(c_inst* c_i);
 d_data* relloc_data(d_data* d_d, int d_len);
