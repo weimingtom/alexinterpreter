@@ -113,11 +113,46 @@ int vm_add(vm_env* vm_p)
 	
 }
 
+r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr)
+{
+	r_value ret = {0};
+	if(gl== COM_LOCAL)
+	{
+		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
+			ret = vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
+	}
+	else if(gl == COM_GLOBAL)
+	{
+		if(addr<vm_p->global_ptr.data_len && addr >=0)
+			ret = vm_p->global_ptr.root_ptr[addr];
+	}
+
+	return ret;
+}
+
 int vm_call(vm_env* vm_p, alex_inst a_i)
 {
+	r_value r_v = {0};
 	next_pc(vm_p);
 	
-	a_i.inst_value.
+	// get jump addr
+	check_value(r_v=vm_get_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr));
+	
+	if(r_v.r_t != sym_type_addr)
+	{
+		print("vm[error line: %d] the ide is not find func!\n", a_i.line);
+		return VM_ERROR_NOT_IDE;
+	}
+	
+	// record pc
+	push_call(vm_p, new_addr(vm_p->pc));
+	vm_p->pc = r_v.r_v.addr;
+
+	// record local top
+	push_call(vm_p, new_addr(vm_p->local_top));
+	vm_p->local_top = vm_p->local_ptr.data_len;
+
+	return VM_SUCCESS;
 }
 
 
