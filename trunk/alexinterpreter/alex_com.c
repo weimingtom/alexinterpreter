@@ -1,6 +1,8 @@
 #include "alex_com.h"
 #include "alex_vm.h"
 #include "alex_log.h"
+#include "alex_gc.h"
+
 #include <stdlib.h>
 
 
@@ -431,6 +433,7 @@ int com_exp(com_env* com_p, tree_node* t_n)
 		push_inst(&com_p->com_inst, new_inst(PUSH, new_number(t_n->b_v.number)));
 		break;
 	case bnf_type_string:
+		push_inst(&com_p->com_inst, new_inst(PUSH, gc_new_string(t_n->b_v.str.s_ptr, GC_DEAD)));
 	//	push_inst(&com_p->com_inst, new_inst(PUSH, new_string(t_n->b_v.str.s_ptr)));
 		break;
 	case bnf_type_var:
@@ -958,7 +961,7 @@ int com_print_inst_value(alex_inst a_i, int pc)
 		print(" %10lf	", a_i.inst_value.r_v.num);
 		break;
 	case sym_type_string:
-		print(" %10s	", a_i.inst_value.r_v.str.s_ptr);
+		print("  \"%s\"	", a_i.inst_value.r_v.str.s_ptr);
 		break;
 	case sym_type_reg_func:
 	case sym_type_func:

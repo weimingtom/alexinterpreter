@@ -63,7 +63,7 @@ typedef struct _sym_table{
 
 typedef struct _r_value{
 	s_value r_v;		// rect value 
-
+	void* gc_p;
 	enum sym_type r_t;	// rect type
 }r_value;
 

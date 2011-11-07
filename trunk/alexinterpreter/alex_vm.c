@@ -6,6 +6,7 @@
 #include "stdlib.h"
 #include "alex_arrylist.h"
 #include "alex_log.h"
+#include "alex_gc.h"
 
 
 vm_env alex_vm_env = {0};
@@ -14,6 +15,8 @@ int vm_push(vm_env* vm_p, alex_inst a_i);
 int vm_tp(vm_env* vm_p, alex_inst a_i);
 r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr);
 int push_call(vm_env* vm_p, r_value r_v);
+r_value top_data(d_data* d_ptr);
+int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v);
 
 /*
 
@@ -131,10 +134,20 @@ int vm_add(vm_env* vm_p)
 			{
 			case sym_type_string:
 				{
-				//	r_value r_v = ;
+					r_value r_v = {0};
+					a_string a_s = alex_string(l_r_v.r_v.str.s_ptr);
+					cat_string(&a_s, r_r_v.r_v.str.s_ptr);
+					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
+					free_string(&a_s);
+					push_data(&vm_p->data_ptr, r_v);
 				}
 				break;
 			case sym_type_num:
+				{
+
+				}
+				break;
+			case sym_type_al:
 				break;
 			default:
 				print("vm[error line: %d] the right op value is not allow!\n", vm_p->code_ptr.root_ptr[vm_p->pc].line);
@@ -146,6 +159,9 @@ int vm_add(vm_env* vm_p)
 		break;
 	case sym_type_al:
 		break;
+	default:
+		print("vm[error line: %d] the left op value is not allow!\n", vm_p->code_ptr.root_ptr[vm_p->pc].line);
+		return VM_ERROR_ADD_OP;
 	}
 	return VM_SUCCESS;
 }
@@ -185,7 +201,8 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
 		{
 			r_value* r_p = &vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
-		//	copy_value(r_p, r_v);
+			check_gc(r_p);
+			*r_p = r_v;
 		}
 		else
 			return	VM_ERROR;
@@ -195,7 +212,8 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 		if(addr<vm_p->global_ptr.data_len && addr >=0)
 		{
 			r_value* r_p = &vm_p->global_ptr.root_ptr[addr];
-		//	copy_value(r_p->r_t r_v);
+			check_gc(r_p);
+			*r_p = r_v;
 		}
 		else
 			return VM_ERROR;
