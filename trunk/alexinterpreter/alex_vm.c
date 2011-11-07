@@ -1,13 +1,19 @@
 /*
 	alex stack vm
 */
-
+#include "alex_com.h"
 #include "alex_vm.h"
 #include "stdlib.h"
+#include "alex_arrylist.h"
 #include "alex_log.h"
 
 
 vm_env alex_vm_env = {0};
+
+int vm_push(vm_env* vm_p, alex_inst a_i);
+int vm_tp(vm_env* vm_p, alex_inst a_i);
+r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr);
+int push_call(vm_env* vm_p, r_value r_v);
 
 /*
 
@@ -111,7 +117,37 @@ int alex_vm(vm_env* vm_p)
 
 int vm_add(vm_env* vm_p)
 {
+	r_value l_r_v = {0};
+	r_value r_r_v = {0};
 	
+	check_value(r_r_v=pop_data(&vm_p->data_ptr));
+	check_value(l_r_v=pop_data(&vm_p->data_ptr));
+	
+	switch(l_r_v.r_t)
+	{
+	case sym_type_string:
+		{
+			switch(r_r_v.r_t)
+			{
+			case sym_type_string:
+				{
+				//	r_value r_v = ;
+				}
+				break;
+			case sym_type_num:
+				break;
+			default:
+				print("vm[error line: %d] the right op value is not allow!\n", vm_p->code_ptr.root_ptr[vm_p->pc].line);
+				return VM_ERROR_ADD_OP;
+			}
+		}
+		break;
+	case sym_type_num:
+		break;
+	case sym_type_al:
+		break;
+	}
+	return VM_SUCCESS;
 }
 
 int vm_pushvar(vm_env* vm_p, alex_inst a_i)
@@ -130,32 +166,44 @@ int vm_push(vm_env* vm_p, alex_inst a_i)
 	return VM_SUCCESS;
 }
 
+
 int vm_move(vm_env* vm_p, alex_inst a_i)
 {
 	r_value r_v = {0};
 	
+	check_value(r_v = top_data(&vm_p->data_ptr));
+	check_vm(vm_set_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr, r_v));
 	return	VM_SUCCESS;
 }
 
+
+// 设置 gl addr 上地址上的值为 r_v
 int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 {
 	if(gl== COM_LOCAL)
 	{
 		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
-			vm_p->local_ptr.root_ptr[vm_p->local_top+addr] = r_v;
+		{
+			r_value* r_p = &vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
+		//	copy_value(r_p, r_v);
+		}
 		else
 			return	VM_ERROR;
 	}
 	else if(gl == COM_GLOBAL)
 	{
 		if(addr<vm_p->global_ptr.data_len && addr >=0)
-			vm_p->global_ptr.root_ptr[addr] = r_v;
+		{
+			r_value* r_p = &vm_p->global_ptr.root_ptr[addr];
+		//	copy_value(r_p->r_t r_v);
+		}
 		else
 			return VM_ERROR;
 	}
 
 	return VM_SUCCESS;
 }
+
 
 r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr)
 {
@@ -211,10 +259,11 @@ int vm_ret(vm_env* vm_p, alex_inst a_i)
 
 	// resume pc
 	vm_p->pc = pc_value.r_v.addr;
-	// free local stack memory 
+	// free local stack memory  if var is string or al will free 
 	for(i=vm_p->local_top; i<vm_p->local_ptr.data_len; i++)
 	{
-		pop_data(&vm_p->local_ptr);
+		r_value l_r_v = pop_data(&vm_p->local_ptr);
+		free_value(&l_r_v);
 	}
 
 	vm_p->local_top = local_top_value.r_v.addr;
@@ -230,9 +279,9 @@ int vm_tp(vm_env* vm_p, alex_inst a_i)
 	check_value(r_r_v=pop_data(&vm_p->data_ptr));
 	check_value(l_r_v=pop_data(&vm_p->data_ptr));
 
-	if(l_r_v.r_t != sym_type_num || r_r_v != sym_type_num)
+	if(l_r_v.r_t != sym_type_num || r_r_v.r_t != sym_type_num)
 	{
-		print("vm[error line: %d] the op value not number!\n", a_i.inst_len);
+		print("vm[error line: %d] the op value not number!\n", a_i.line);
 		return VM_ERROR_OP_VALUE;
 	}
 
@@ -408,7 +457,7 @@ r_value pop_data(d_data* d_ptr)
 	}
 	else
 	{
-		r_v = d_ptr->root_ptr[d_ptr->data_len--];
+		r_v = d_ptr->root_ptr[(--d_ptr->data_len)];
 		return r_v;
 	}
 
@@ -451,7 +500,7 @@ int push_global(vm_env* vm_p, r_value r_v)
 	return (vm_p->global_ptr.data_len)++;
 }
 
-// when func call, push pc, local_top and arg_num
+// when func call, push pc, local_top
 int push_call(vm_env* vm_p, r_value r_v)
 {
 	if(vm_p==NULL)

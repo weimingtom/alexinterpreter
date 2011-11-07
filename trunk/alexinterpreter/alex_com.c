@@ -431,7 +431,7 @@ int com_exp(com_env* com_p, tree_node* t_n)
 		push_inst(&com_p->com_inst, new_inst(PUSH, new_number(t_n->b_v.number)));
 		break;
 	case bnf_type_string:
-	//	push_inst(&com_p->com_inst, new_inst(PUSH, new_str));
+	//	push_inst(&com_p->com_inst, new_inst(PUSH, new_string(t_n->b_v.str.s_ptr)));
 		break;
 	case bnf_type_var:
 		{

@@ -82,6 +82,23 @@ void free_value(r_value* rv)
 	memset(rv, 0, sizeof(r_value));
 }
 
+
+void copy_value(r_value* l_v_p, r_value r_v)
+{
+	if(l_v_p==NULL)
+		return;
+	
+	free_value(l_v_p);
+	
+	if(r_v.r_t== sym_type_al)
+	{
+		(r_v.r_v.al->count)++;
+	}
+
+	*l_v_p = r_v;
+}
+
+
 void del_al(alex_al* al)
 {
 	int i=0;
