@@ -1,15 +1,12 @@
 
-function sum(var a, var b)
+function sum()
 {	
-	var i=0,j=0;
-	while(i<10)
-	{
-		while(j<20)
-		{
-			j++;
-		}
-		i++;
-	}
+	var a = "string_1";
+	var b = "string_2";
+	
+	var c ;
+	
+	c = a+b;
 }
 
-sum(11, 22);
+sum();
