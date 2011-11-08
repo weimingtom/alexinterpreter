@@ -34,6 +34,7 @@ typedef enum _inst
 {
 	END,							// 结束指令
 	PUSH,							// 向栈顶PUSH进去一个常量
+	VAR,							// 向局部堆栈申请一个变量 默认为0
 	PUSHVAR,						// 向栈顶写入一个变量
 	POP,							// 弹出栈顶数据
 	NEWAL,							// 创建一个数组

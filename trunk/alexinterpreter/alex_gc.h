@@ -50,5 +50,6 @@ typedef struct _a_gc{
 
 extern a_gc alex_gc;
 r_value gc_new_string(char* str, e_gc_level gc_l);
-#define check_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count--; }while(0)
+#define check_l_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count--; }while(0)
+#define check_r_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count++; }while(0)
 #endif
