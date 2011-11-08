@@ -32,7 +32,8 @@ char* gl_str[] = {
 
 char* com_str[] = {
 	"END",		
-	"PUSH",		
+	"PUSH",	
+	"VAR",
 	"PUSHVAR",	
 	"POP",		
 	"NEWAL",		
@@ -183,6 +184,7 @@ int com_arg_def(com_env* com_p, tree_node* t_n)
 	while(t_n)
 	{
 		l_com_addr(com_p, t_n->b_v.name.s_ptr);
+		push_inst(&com_p->com_inst, new_inst(VAR));
 		t_n = t_n->next;
 	}
 	
@@ -773,7 +775,10 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 					return COM_ERROR_REDEF;
 				}
 				else
+				{
+					push_inst(&com_p->com_inst, new_inst(VAR));
 					add_new_table(a_table, var_name);
+				}
 			break;
 		case bnf_type_ass:
 			{
@@ -784,7 +789,10 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 					return COM_ERROR_REDEF;
 				}
 				else
+				{
+					push_inst(&com_p->com_inst, new_inst(VAR));
 					add_new_table(a_table, var_name);
+				}
 				check_com(com_ass(com_p, t_n));
 				push_inst(&com_p->com_inst, new_inst(POP));
 			}
