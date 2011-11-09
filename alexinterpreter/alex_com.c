@@ -580,20 +580,19 @@ OP_ONE:
 			}
 			else if(r_t_n)		// บ๓ืบ
 			{
-				
-				if(type_tree(l_t_n)==bnf_type_var)
+				if(type_tree(r_t_n)==bnf_type_var)
 				{
 					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
 				}
-				else if(type_tree(l_t_n)==bnf_type_al)
+				else if(type_tree(r_t_n)==bnf_type_al)
 				{
 					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
-					check_com(com_al_v(com_p, l_t_n));		// push al value
+					check_com(com_al_v(com_p, r_t_n));		// push al value
 					push_inst(&com_p->com_inst, new_inst(e_i));
-					check_com(com_al_p(com_p, l_t_n));
+					check_com(com_al_p(com_p, r_t_n));
 					push_inst(&com_p->com_inst, new_inst(MOVEAL));
 				}
 			}
@@ -1045,7 +1044,7 @@ addr_data* relloc_s_addr(addr_data* a_d, int a_len)
 		int n_len = (a_d->addr_size+a_len)*sizeof(s_addr);
 		s_addr* n_a_i = (s_addr*)malloc(n_len);
 		memset(n_a_i, 0, n_len);
-		memcpy(n_a_i, a_d->root_ptr, a_d->addr_size);
+		memcpy(n_a_i, a_d->root_ptr, a_d->addr_size*sizeof(s_addr));
 		free(a_d->root_ptr);
 		a_d->root_ptr = n_a_i;
 		a_d->addr_size += a_len;
