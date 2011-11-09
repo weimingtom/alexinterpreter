@@ -71,7 +71,18 @@ st* add_table(sym_table* s_t, st st_v)
 	//  进行编译地址赋值
 	if (s_t==global_table)
 	{
-		push_data(&com_env_p->var_table.global_ptr, new_number(0));
+		r_value r_v = {0};
+		if(st_v.s_t == sym_type_reg_func)
+		{
+			r_v.r_t = sym_type_reg_func;
+			r_v.r_v.func = st_v.s_v.func;
+
+		}
+		else
+		{
+			r_v = new_number(0);
+		}
+		push_data(&com_env_p->var_table.global_ptr, r_v);
 		st_v.st_addr = com_env_p->var_table.global_ptr.data_len - 1;
 	}
 	else

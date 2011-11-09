@@ -134,6 +134,7 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 		case bnf_type_funccall:
 			{
 				check_com(com_func_call(com_p, main_tree));
+				push_inst(&com_p->com_inst, new_inst(POP));
 			}
 			break;
 		default:
@@ -200,13 +201,13 @@ int com_arg_def(com_env* com_p, tree_node* t_n)
 
 int com_seg(com_env* com_p, tree_node* t_n)
 {
-	t_n = t_n->childs_p[0];
-	
-	if(t_n==NULL)
+	if(t_n->childs_p[0]==NULL)
 	{
 		print("com[error line: %d] the seg is nil!\n", t_n->line);
 		return COM_ERROR_NOT_EXP;
 	}
+
+	t_n = t_n->childs_p[0];
 
 	while(t_n)
 	{
@@ -988,7 +989,24 @@ int com_print_inst_value(alex_inst a_i, int pc)
 		print(" %10d	", a_i.inst_value.r_v.addr);
 		if(a_i.inst_type == CALL)
 		{
-			print("; func addr = [%d] ", com_env_p->var_table.global_ptr.root_ptr[a_i.inst_value.r_v.addr].r_v.addr);
+			if(a_i.inst_value.r_t == sym_type_addr)
+			{
+				r_value r_v = com_env_p->var_table.global_ptr.root_ptr[a_i.inst_value.r_v.addr];
+				if(r_v.r_t == sym_type_addr)
+					print("; func addr = [%d] ", r_v.r_v.addr);
+				else if(r_v.r_t == sym_type_reg_func)
+					print("; reg func addr = [%p] ", r_v.r_v.func);
+				else
+				{
+					print(" attemp a not addr !\n");
+					return COM_ERROR_OTHER;
+				}
+			}
+			else
+			{
+				print(" attemp a not addr !\n");
+				return COM_ERROR_OTHER;
+			}
 			return COM_SUCCESS;
 		}
 		break;

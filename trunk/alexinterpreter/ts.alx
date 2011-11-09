@@ -1,9 +1,7 @@
 
-function sum(var v1, var v2)
-{	
-	var a, b,c;
-	
-	c = a+b;
+function main()
+{
+	print("hello world!");
 }
 
-sum(1,2);
+main();

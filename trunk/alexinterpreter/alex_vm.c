@@ -9,6 +9,8 @@
 #include "alex_gc.h"
 
 
+typedef int (*vm_func)(vm_env*);
+
 vm_env alex_vm_env = {0};
 
 int vm_push(vm_env* vm_p, alex_inst a_i);
@@ -126,12 +128,14 @@ int alex_vm(vm_env* vm_p)
 			break;
 		case CALL:
 			check_vm(vm_call(vm_p, a_i));
+			continue;
 			break;
 		case JUMP:
 			check_vm(vm_jump(vm_p, a_i));
 			break;
 		case  RET:
 			check_vm(vm_ret(vm_p, a_i));
+			continue;
 			break;
 		default:
 			print("vm[error line: %d] not know inst!\n", a_i.line);
@@ -211,7 +215,6 @@ int vm_jtrue(vm_env* vm_p, alex_inst a_i)
 		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i.inst_value.r_v.addr;
 	}
-	
 	
 	return VM_SUCCESS;
 }
@@ -395,19 +398,35 @@ int vm_call(vm_env* vm_p, alex_inst a_i)
 	// get jump addr
 	check_value(r_v=vm_get_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr));
 	
-	if(r_v.r_t != sym_type_addr)
+	if(r_v.r_t == sym_type_addr)		// alex func
+	{
+		// record pc
+		push_call(vm_p, new_addr(vm_p->pc));
+		vm_p->pc = r_v.r_v.addr;
+
+		// record local top
+		push_call(vm_p, new_addr(vm_p->local_top));
+		vm_p->local_top = vm_p->local_ptr.data_len;
+	}
+	else if(r_v.r_t == sym_type_reg_func)		// reg func
+	{
+		vm_func func_p = (vm_func)r_v.r_v.func;	
+		int ret = func_p(vm_p);
+		if(ret==0)
+		{
+			push_data(&vm_p->data_ptr, new_number(0));
+		}
+		else if(ret != 1)
+		{
+			print("vm[error line: %d] reg func return is error ! ret= %d is error!", a_i.line, ret);
+			return VM_ERROR_REG_FUNC;
+		}
+	}
+	else
 	{
 		print("vm[error line: %d] the ide is not find func!\n", a_i.line);
 		return VM_ERROR_NOT_IDE;
 	}
-	
-	// record pc
-	push_call(vm_p, new_addr(vm_p->pc));
-	vm_p->pc = r_v.r_v.addr;
-
-	// record local top
-	push_call(vm_p, new_addr(vm_p->local_top));
-	vm_p->local_top = vm_p->local_ptr.data_len;
 
 	return VM_SUCCESS;
 }
