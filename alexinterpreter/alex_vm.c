@@ -807,3 +807,16 @@ int push_call(vm_env* vm_p, r_value r_v)
 	
 	return (vm_p->call_ptr.data_len)++;	
 }
+
+
+void vm_print(vm_env* vm_p)
+{
+	print("\n\n-------vm state----------\n\n");
+	print("code stack:    len[%.5d], size[%.5d], pc[%d]\n", vm_p->code_ptr.inst_len, vm_p->code_ptr.inst_size, vm_p->pc);	
+	print("local stack:   len[%.5d], size[%.5d]\n", vm_p->local_ptr.data_len, vm_p->local_ptr.data_size);
+	print("data stack:    len[%.5d], size[%.5d]\n", vm_p->data_ptr.data_len, vm_p->data_ptr.data_size);
+	print("call stack:    len[%.5d], size[%.5d]\n", vm_p->call_ptr.data_len, vm_p->call_ptr.data_size);
+	print("global stack:  len[%.5d], size[%.5d]\n", vm_p->global_ptr.data_len, vm_p->global_ptr.data_size);
+	print("gc:            size[%.5d]\n", alex_gc.gc_size);
+	print("------------vm state end---------\n");
+}

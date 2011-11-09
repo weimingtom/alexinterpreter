@@ -130,4 +130,6 @@ r_value pop_data(d_data* d_ptr);
 void push_data(d_data* d_ptr, r_value r_v);
 int alex_vm(vm_env* vm_p);
 
+void vm_print(vm_env* vm_p);
+
 #endif

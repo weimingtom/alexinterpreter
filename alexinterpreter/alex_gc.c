@@ -113,7 +113,8 @@ gc_node* gc_add(g_value g_v, e_gc_level gc_l)
 
 	t_gc_node->next = alex_gc.gc_head;
 	alex_gc.gc_head = t_gc_node;
-
+	
+	alex_gc.gc_size++;
 	return t_gc_node;
 }
 
