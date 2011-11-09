@@ -32,14 +32,20 @@ alex_al* relloc_al(alex_al* al)
 	return al;
 }
 
-alex_al* new_al()
+alex_al* _new_al(int def_count)
 {
 	alex_al* ret_al = (alex_al*)malloc(sizeof(alex_al));
 	memset(ret_al, 0, sizeof(alex_al));
-	relloc_al(ret_al);
+	do
+	{
+		relloc_al(ret_al);
+	}while(ret_al->al_size <= def_count);
+	
+	ret_al->al_len = (def_count <=0)?(0):(def_count);
 //	ret_al->count = 1;
 	return ret_al;
 }
+
 
 r_value* get_al(alex_al* al, int inx)
 {
@@ -53,6 +59,15 @@ r_value* get_al(alex_al* al, int inx)
 r_value add_al(alex_al* al, r_value r_v)
 {
 	relloc_al(al);
+
+	al->al_v[al->al_len++] = r_v;
+	return al->al_v[al->al_len-1];
+}
+
+/*
+r_value add_al(alex_al* al, r_value r_v)
+{
+	relloc_al(al);
 	if(r_v.r_t == sym_type_string)
 	{
 		(al->al_v[al->al_len]).r_v.str = alex_string(r_v.r_v.str.s_ptr);
@@ -63,6 +78,8 @@ r_value add_al(alex_al* al, r_value r_v)
 
 	return al->al_v[al->al_len-1];
 }
+*/
+
 
 void free_value(r_value* rv)
 {

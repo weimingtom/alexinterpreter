@@ -1,6 +1,7 @@
 #include "alex_gc.h"
 #include "alex_sym.h"
 #include "alex_symbol_table.h"
+#include "alex_arrylist.h"
 #include "alex_log.h"
 #include <stdlib.h>
 
@@ -82,6 +83,15 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 	return gc_p;
 }
 
+g_value gc_new_g_v_al(int count)
+{
+	g_value ret = {0};
+
+	ret.sg_t = sym_type_al;
+	ret.sg_v.al = _new_al(count);
+
+	return ret;
+}
 
 g_value gc_new_g_v_str(char* str)
 {
@@ -122,6 +132,20 @@ r_value gc_new_string(char* str, e_gc_level gc_l)
 	return ret;
 }
 
+r_value gc_new_al(int count)
+{
+	gc_node* gc_p = NULL;
+	r_value ret = {0};
+
+	if( (gc_p=gc_add(gc_new_g_v_al(count), GC_LIVE))==0 )
+		return ret;
+
+	ret.r_t = sym_type_al;
+	ret.r_v.al = gc_p->gc_value.sg_v.al;
+	ret.gc_p = gc_p;
+
+	return ret;
+}
 
 int gc_back()
 {

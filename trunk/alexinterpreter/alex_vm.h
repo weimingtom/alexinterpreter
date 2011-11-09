@@ -17,7 +17,8 @@ enum _e_vm_ret{
 	VM_ERROR_OP_VALUE,
 	VM_ERROR_NOT_IDE,
 	VM_ERROR_ADD_OP,
-	VM_ERROR_REG_FUNC
+	VM_ERROR_REG_FUNC,
+	VM_ERROR_AL
 };
 
 enum _e_register{
@@ -111,6 +112,7 @@ typedef struct _vm_env
 #define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
 #define relloc_call(d_d)	relloc_data((d_d), CALL_MEM_LEN)
 #define check_value(r_v)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error) return VM_ERROR_POP;}while(0)
+#define check_at_value(r_v, tt)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error || t_r_v.r_t!=(tt)) return VM_ERROR_POP;}while(0) 
 #define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
 #define next_pc(v_p)		((v_p)->pc++)
 extern vm_env alex_vm_env;

@@ -28,6 +28,10 @@ int vm_movereg(vm_env* vm_p, alex_inst a_i);
 int vm_call(vm_env* vm_p, alex_inst a_i);
 int vm_jump(vm_env* vm_p, alex_inst a_i);
 int vm_ret(vm_env* vm_p, alex_inst a_i);
+int vm_newal(vm_env* vm_p, alex_inst a_i);
+int vm_al(vm_env* vm_p, alex_inst a_i);
+int vm_moveal(vm_env* vm_p, alex_inst a_i);
+int vm_addr(vm_env* vm_p, alex_inst a_i);
 
 /*
 
@@ -88,8 +92,10 @@ int alex_vm(vm_env* vm_p)
 			pop_data(&vm_p->data_ptr);
 			break;
 		case NEWAL:
+			check_vm(vm_newal(vm_p, a_i));
 			break;
 		case AL:
+			check_vm(vm_al(vm_p, a_i));
 			break;
 		case JFALSE:
 			check_vm(vm_jfalse(vm_p, a_i));
@@ -101,6 +107,7 @@ int alex_vm(vm_env* vm_p)
 			check_vm(vm_move(vm_p, a_i));
 			break;
 		case MOVEAL:
+			check_vm(vm_moveal(vm_p, a_i));
 			break;
 		case MOVEREG:
 			check_vm(vm_movereg(vm_p, a_i));
@@ -139,12 +146,116 @@ int alex_vm(vm_env* vm_p)
 			break;
 		default:
 			print("vm[error line: %d] not know inst!\n", a_i.line);
+			return	VM_ERROR;
 		}
 
 		vm_p->pc++;
 	}
 
 	return	VM_ERROR;
+}
+
+int vm_moveal(vm_env* vm_p, alex_inst a_i)
+{
+	r_value al_gl = {0};
+	r_value al_addr = {0};
+	r_value al_inx = {0};
+	r_value al_r_v = {0};
+	r_value al = {0};
+	
+	r_value* al_l_p = NULL; 
+	r_value al_l_v = {0};
+
+	check_at_value(al_gl=pop_data(&vm_p->data_ptr), sym_type_num);
+	check_at_value(al_addr=pop_data(&vm_p->data_ptr), sym_type_addr);
+	check_at_value(al_inx=pop_data(&vm_p->data_ptr), sym_type_num);
+	check_value(al_r_v=top_data(&vm_p->data_ptr));
+	
+
+	check_value(al = vm_get_var(vm_p, (e_gl)al_gl.r_v.num, al_addr.r_v.addr));
+	
+	if(al.r_t != sym_type_al)
+	{
+		print("vm[error line: %d], not al!\n", a_i.line);
+		return VM_ERROR_AL;
+	}
+	
+	if( (al_l_p=get_al(al.r_v.al, (int)al_inx.r_v.num))==NULL )
+	{
+		print("vm[error line: %d], error al index[%d]!", a_i.line, (int)al_inx.r_v.num);
+		return VM_ERROR_AL;
+	}
+	
+	check_l_gc(al_l_p);
+	check_r_gc(&al_r_v);
+	
+	*al_l_p = al_r_v;
+	return VM_SUCCESS;
+}
+
+int vm_al(vm_env* vm_p, alex_inst a_i)
+{
+	r_value* at_al = NULL;
+	r_value r_index = {0};
+	r_value al = {0};
+	check_value(r_index=pop_data(&vm_p->data_ptr));
+	
+	if(r_index.r_t != sym_type_num)
+	{
+		print("vm[error line: %d] the al index is not number!\n", a_i.line);
+		return VM_ERROR_AL;
+	}
+	
+	check_vm(vm_addr(vm_p, a_i));
+	check_value(al=vm_get_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr));
+
+	if(al.r_t != sym_type_al)
+	{
+		print("vm[error line: %d] the ide is not al!\n", a_i.line);
+		return VM_ERROR_AL;
+	}
+	
+	if( (at_al=get_al(al.r_v.al, (int)r_index.r_v.num))==NULL )
+	{
+		print("vm[error line: %d] not find al index!\n", a_i.line);
+		return VM_ERROR_AL;
+	}
+	
+	push_data(&vm_p->data_ptr, *at_al);
+
+	return VM_SUCCESS;
+}
+
+
+int vm_newal(vm_env* vm_p, alex_inst a_i)
+{
+	int i=0;
+	int count = 0;
+	r_value al_one = {0};
+	r_value new_al = {0};
+
+	if(a_i.inst_value.r_t != sym_type_num)
+	{
+		print("vm[error line: %d] new al count is error !\n", a_i.line);
+		return VM_ERROR_AL;
+	}
+	
+	new_al = gc_new_al((int)a_i.inst_value.r_v.num);
+	count = (int)a_i.inst_value.r_v.num;
+	for(i=0; i<count; i++)
+	{
+		r_value* r_p = NULL;
+		check_value(al_one=pop_data(&vm_p->data_ptr));
+		check_r_gc(&al_one);
+		r_p = get_al(new_al.r_v.al, count-i-1);
+		if(r_p==NULL)
+			return VM_ERROR_AL;
+		else
+			*r_p = al_one;
+	}
+
+	push_data(&vm_p->data_ptr, new_al);
+	return VM_SUCCESS;
 }
 
 int vm_addr(vm_env* vm_p, alex_inst a_i)
