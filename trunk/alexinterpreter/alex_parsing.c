@@ -78,7 +78,9 @@ tree_node* alex_parsing(token_list* t_lt)
 			{
 				r_tn = syn_var_def(t_lt);
 				if(r_tn)
+				{
 					add_main(r_tn);
+				}
 				else
 					return NULL;
 			}

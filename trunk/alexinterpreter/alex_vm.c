@@ -304,6 +304,7 @@ int vm_jfalse(vm_env* vm_p, alex_inst a_i)
 	{
 		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i.inst_value.r_v.addr;
+		vm_p->pc--;
 	}
 
 
@@ -325,6 +326,7 @@ int vm_jtrue(vm_env* vm_p, alex_inst a_i)
 	{
 		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i.inst_value.r_v.addr;
+		vm_p->pc--;
 	}
 	
 	return VM_SUCCESS;
@@ -334,6 +336,7 @@ int vm_jump(vm_env* vm_p, alex_inst a_i)
 {
 	check_vm(vm_addr(vm_p, a_i));
 	vm_p->pc = a_i.inst_value.r_v.addr;
+	vm_p->pc--;
 
 	return VM_SUCCESS;
 }
@@ -487,11 +490,17 @@ r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr)
 	{
 		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
 			ret = vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
+		else
+		{
+			print("vm[error] get local is fail!\n");
+		}
 	}
 	else if(gl == COM_GLOBAL)
 	{
 		if(addr<vm_p->global_ptr.data_len && addr >=0)
 			ret = vm_p->global_ptr.root_ptr[addr];
+		else
+			print("vm[error] get global is fail!\n");
 	}
 	else if(gl == COM_REG)
 	{
@@ -610,7 +619,7 @@ int vm_tp(vm_env* vm_p, alex_inst a_i)
 		ret_value = new_number( ((int)(l_r_v.r_v.num) < (int)(r_r_v.r_v.num))?(1):(0) );
 		break;
 	case LITE:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) >= (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v.r_v.num) <= (int)(r_r_v.r_v.num))?(1):(0) );
 		break;
 	case EQU:
 		ret_value = new_number( ((int)(l_r_v.r_v.num) == (int)(r_r_v.r_v.num))?(1):(0) );
@@ -678,7 +687,7 @@ c_inst* relloc_code(c_inst* c_i)
 		int n_len = (c_i->inst_size+CODE_MEM_LEN)*sizeof(alex_inst);
 		alex_inst* n_a_i = (alex_inst*)malloc(n_len);
 		memset(n_a_i, 0, n_len);
-		memcpy(n_a_i, c_i->root_ptr, c_i->inst_size);
+		memcpy(n_a_i, c_i->root_ptr, c_i->inst_size*sizeof(alex_inst));
 		free(c_i->root_ptr);
 		c_i->root_ptr = n_a_i;
 		c_i->inst_size += CODE_MEM_LEN;
@@ -696,7 +705,7 @@ d_data* relloc_data(d_data* d_d, int d_len)
 		int n_len = (d_d->data_size+d_len)*sizeof(r_value);
 		r_value* n_a_i = (r_value*)malloc(n_len);
 		memset(n_a_i, 0, n_len);
-		memcpy(n_a_i, d_d->root_ptr, d_d->data_size);
+		memcpy(n_a_i, d_d->root_ptr, d_d->data_size*sizeof(r_value));
 		free(d_d->root_ptr);
 		d_d->root_ptr = n_a_i;
 		d_d->data_size += d_len;
@@ -720,7 +729,7 @@ void push_data(d_data* d_ptr, r_value r_v)
 {
 	if(d_ptr==NULL)
 		return;
-	
+
 	relloc_data(d_ptr, DATA_MEM_LEN);
 	d_ptr->root_ptr[d_ptr->data_len++] = r_v;
 }
@@ -808,6 +817,18 @@ int push_call(vm_env* vm_p, r_value r_v)
 	return (vm_p->call_ptr.data_len)++;	
 }
 
+int _check_value(r_value r_v)
+{
+	r_value t_r_v=(r_v);
+	if(t_r_v.r_t==sym_type_error) 
+	{ 
+		print("vm[error pc: %d]!\n", alex_vm_env.pc); 
+		vm_print(&alex_vm_env);
+		return VM_ERROR_POP;
+	}
+	
+	return VM_SUCCESS;
+}
 
 void vm_print(vm_env* vm_p)
 {
