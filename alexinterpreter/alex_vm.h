@@ -16,7 +16,8 @@ enum _e_vm_ret{
 	VM_ERROR_POP,
 	VM_ERROR_OP_VALUE,
 	VM_ERROR_NOT_IDE,
-	VM_ERROR_ADD_OP
+	VM_ERROR_ADD_OP,
+	VM_ERROR_REG_FUNC
 };
 
 enum _e_register{
@@ -125,5 +126,6 @@ int push_local(vm_env* vm_p, r_value r_v);
 int push_global(vm_env* vm_p, r_value r_v);
 r_value pop_data(d_data* d_ptr);
 void push_data(d_data* d_ptr, r_value r_v);
+int alex_vm(vm_env* vm_p);
 
 #endif

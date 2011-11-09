@@ -110,5 +110,5 @@ alex_inst new_inst(e_alex_inst e_i, ...);
 int com_al(com_env* com_p, tree_node* t_n, ubyte v_p);
 int com_print(com_env* com_p);
 int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree);
-
+vm_env* com_to_vm(com_env* com_p);
 #endif

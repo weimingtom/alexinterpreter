@@ -4,6 +4,7 @@
 #include "alex_arrylist.h"
 #include "alex_interpret.h"
 #include "alex_window.h"
+#include "alex_vm.h"
 #include <time.h>
 
 
@@ -11,7 +12,7 @@
 void reg_lib(sym_table* g_t, char* str, ALEX_FUNC a_f)
 {
 	st t_st = {0};
-	
+
 	t_st.name = alex_string(str);
 	t_st.s_t = sym_type_reg_func;
 	t_st.s_v.func = a_f;
@@ -51,6 +52,15 @@ void print_value(r_value  val)
 		a_print("%p", val.r_v.func);
 		break;
 	}
+}
+
+
+int alex_a_print(vm_env* vm_p)
+{
+	r_value r_v = pop_data(&vm_p->data_ptr);
+	print_value(r_v);
+	
+	return 0;
 }
 
 
@@ -146,7 +156,8 @@ ret_node* alex_rand(ret_node* arg_list)
 void alex_reg_lib(sym_table* g_t)
 {
 	srand((unsigned)time(0));
-	reg_lib(g_t, "print", alex_print);
+	//reg_lib(g_t, "print", alex_print);
+	reg_lib(g_t, "print", alex_a_print);
 	reg_lib(g_t, "create_window", alex_create_window);
 	reg_lib(g_t, "message_box", alex_message_box);
 	reg_lib(g_t, "sleep", alex_sleep);
