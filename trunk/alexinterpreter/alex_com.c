@@ -114,12 +114,6 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 	if(main_tree == NULL)
 		return	COM_ERROR_OTHER;;
 	 
-	while(func_tree)
-	{
-		check_com(com_func_def(com_p, func_tree));
-		func_tree = func_tree->next;
-	}
-
 	// write begin pc
 	com_p->pc = now_inst_addr(com_p);
 	while(main_tree)
@@ -148,6 +142,13 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 	
 	// write end inst
 	push_inst(&com_p->com_inst, new_inst(END));
+	
+	while(func_tree)
+	{
+		check_com(com_func_def(com_p, func_tree));
+		func_tree = func_tree->next;
+	}
+
 	return COM_SUCCESS;
 }
 
@@ -776,7 +777,8 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 				}
 				else
 				{
-					push_inst(&com_p->com_inst, new_inst(VAR));
+					if(gl == COM_LOCAL)
+						push_inst(&com_p->com_inst, new_inst(VAR));
 					add_new_table(a_table, var_name);
 				}
 			break;
@@ -790,7 +792,8 @@ int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl)
 				}
 				else
 				{
-					push_inst(&com_p->com_inst, new_inst(VAR));
+					if(gl == COM_LOCAL)
+						push_inst(&com_p->com_inst, new_inst(VAR));
 					add_new_table(a_table, var_name);
 				}
 				check_com(com_ass(com_p, t_n));
