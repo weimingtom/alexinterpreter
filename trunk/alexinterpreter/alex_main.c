@@ -36,6 +36,8 @@ int  alex_run(char* file)
 			com_to_vm(com_env_p);
 			print("\n\n -----CONSEL-----\n");
 			alex_vm(&alex_vm_env);
+
+			vm_print(&alex_vm_env);
 		}
 	}
 	
