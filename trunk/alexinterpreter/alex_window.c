@@ -15,13 +15,13 @@ ret_node* alex_message_box(ret_node* arg_list)
 }
 
 // 获得系统启动 当前的毫秒数
-ret_node* alex_t_time(ret_node* arg_list)
+int alex_t_time(vm_env* vm_p)
 {
-	ret_node* ret_n = new_ret_node(sym_type_num);
-	ret_n->ret_value.r_v.num = (ALEX_NUMBER)(GetTickCount());
-	
-	return ret_n;
+	push_data(&vm_p->data_ptr, new_number((ALEX_NUMBER)(GetTickCount())));
+
+	return 1;
 }
+
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

@@ -839,5 +839,5 @@ void vm_print(vm_env* vm_p)
 	print("call stack:    len[%.5d], size[%.5d]\n", vm_p->call_ptr.data_len, vm_p->call_ptr.data_size);
 	print("global stack:  len[%.5d], size[%.5d]\n", vm_p->global_ptr.data_len, vm_p->global_ptr.data_size);
 	print("gc:            size[%.5d]\n", alex_gc.gc_size);
-	print("------------vm state end---------\n");
+	print("--------vm state end---------\n");
 }

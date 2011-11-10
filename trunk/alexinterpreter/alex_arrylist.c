@@ -1,5 +1,6 @@
 #include "alex_interpret.h"
 #include "alex_arrylist.h"
+#include "alex_gc.h"
 #include <stdlib.h>
 
 
@@ -59,7 +60,8 @@ r_value* get_al(alex_al* al, int inx)
 r_value add_al(alex_al* al, r_value r_v)
 {
 	relloc_al(al);
-
+	
+	check_r_gc(&r_v);
 	al->al_v[al->al_len++] = r_v;
 	return al->al_v[al->al_len-1];
 }
