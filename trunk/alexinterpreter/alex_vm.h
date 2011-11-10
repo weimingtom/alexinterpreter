@@ -63,7 +63,10 @@ typedef enum _inst
 	CALL,							// 函数调用
 	JUMP,							// 跳转
 	RET,							// return
-	
+	SADD,
+	BSADD,
+	SSUB,
+	BSSUB,
 	INST_COUNT
 }e_alex_inst;
 

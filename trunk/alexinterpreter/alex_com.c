@@ -59,7 +59,11 @@ char* com_str[] = {
 	"NEQU",		
 	"CALL",		
 	"JUMP",		
-	"RET"				
+	"RET",
+	"SADD",
+	"BSADD",
+	"SSUB",
+	"BSSUB"
 };
 
 s_addr* top_s_addr(addr_data* a_d);
@@ -519,6 +523,7 @@ int com_op_value(com_env* com_p, tree_node* t_n)
 // 一元操作符
 int com_op_one(com_env* com_p, tree_node* t_n)
 {
+	e_alex_inst e_is = END;
 	e_alex_inst e_i = END;
 	tree_node* l_t_n = t_n->childs_p[0];
 	tree_node* r_t_n = t_n->childs_p[1];
@@ -551,21 +556,18 @@ int com_op_one(com_env* com_p, tree_node* t_n)
 	{
 	case token_type_sadd:
 		e_i = ADD;
+		e_is = SADD;
 		goto OP_ONE;
 	case token_type_ssub:
 		e_i = SUB;
+		e_is = SSUB;
 OP_ONE:
 		{
 			if(l_t_n)		// 前缀
 			{
 				if(type_tree(l_t_n)==bnf_type_var)
 				{
-					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
-					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
-					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
-					push_inst(&com_p->com_inst, new_inst(e_i));
-					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
-					push_inst(&com_p->com_inst, new_inst(POP));
+					push_inst(&com_p->com_inst, new_inst(e_is, r_a.gl, r_a.addr));
 				}
 				else if(type_tree(l_t_n)==bnf_type_al)
 				{
@@ -574,19 +576,21 @@ OP_ONE:
 					push_inst(&com_p->com_inst, new_inst(MOVEREG, new_addr(REG_AX)));		// al[inx] 的值移动到寄存器AX
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					check_com(com_al_p(com_p, l_t_n));
-					push_inst(&com_p->com_inst, new_inst(MOVEAL));
 					push_inst(&com_p->com_inst, new_inst(POP));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, COM_REG, new_addr(REG_AX)));
 				}
 			}
 			else if(r_t_n)		// 后缀
 			{
+				e_is++;
 				if(type_tree(r_t_n)==bnf_type_var)
 				{
-					push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
+				/*	push_inst(&com_p->com_inst, new_inst(PUSH, new_number(1)));
 					push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					push_inst(&com_p->com_inst, new_inst(MOVE, r_a.gl, r_a.addr));
+					*/
+					push_inst(&com_p->com_inst, new_inst(e_is, r_a.gl, r_a.addr));
 				}
 				else if(type_tree(r_t_n)==bnf_type_al)
 				{
@@ -594,7 +598,6 @@ OP_ONE:
 					check_com(com_al_v(com_p, r_t_n));		// push al value
 					push_inst(&com_p->com_inst, new_inst(e_i));
 					check_com(com_al_p(com_p, r_t_n));
-					push_inst(&com_p->com_inst, new_inst(MOVEAL));
 				}
 			}
 		}
@@ -708,10 +711,7 @@ int com_al(com_env* com_p, tree_node* t_n, ubyte v_p)
 		push_inst(&com_p->com_inst, new_inst(AL, r_a.gl, r_a.addr));
 	else if(v_p==COM_POINT)
 	{
-		// push al address
-		push_inst(&com_p->com_inst, new_inst(PUSH, new_addr(r_a.addr)));
-		// push al global or local
-		push_inst(&com_p->com_inst, new_inst(PUSH, new_number(r_a.gl)));
+		push_inst(&com_p->com_inst, new_inst(MOVEAL, r_a.gl, r_a.addr));
 	}
 	else
 		return COM_ERROR_OTHER;
@@ -746,7 +746,7 @@ int com_ass(com_env* com_p, tree_node* t_n)
 		{
 			check_com(com_exp(com_p, r_t_n));		// get right value
 			check_com(com_al_p(com_p, l_t_n));		// get left al point
-			push_inst(&com_p->com_inst, new_inst(MOVEAL));
+	//		push_inst(&com_p->com_inst, new_inst(MOVEAL));
 		}
 		break;
 	default:
@@ -908,6 +908,11 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 	case AL:
 	case MOVE:
 	case PUSHVAR:
+	case SADD:
+	case BSADD:
+	case SSUB:
+	case BSSUB:
+	case MOVEAL:
 		{
 			a_i.gl = (e_gl)va_arg(arg_list, e_gl);			// get gl
 			a_i.inst_value.r_v.addr = va_arg(arg_list, int);// get addr

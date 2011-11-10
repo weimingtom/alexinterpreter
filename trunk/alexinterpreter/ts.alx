@@ -35,17 +35,17 @@ function sort(var al)
 		j=i;
 		while(j<al_len )
 		{
-			if(1>2)
-				max_index = j;
+	#		if(1>2)
+	#			max_index = j;
 				
-			j=j+1;
+			j++;
 		}
 		
 		temp = al[i];
 		al[i] = al[max_index];
 		al[max_index] = temp;
 	
-		i=i+1;
+		i++;
 	}	
 }
 
