@@ -55,7 +55,9 @@ void print_value(r_value  val)
 }
 
 
-int alex_a_print(vm_env* vm_p)
+
+// 打印库函数
+int alex_print(vm_env* vm_p)
 {
 	r_value r_v = pop_data(&vm_p->data_ptr);
 	print_value(r_v);
@@ -64,17 +66,6 @@ int alex_a_print(vm_env* vm_p)
 }
 
 
-// 打印库函数
-ret_node* alex_print(ret_node* arg_list)
-{
-	while(arg_list)
-	{
-		print_value(arg_list->ret_value);
-		arg_list = arg_list->next;
-	}
-	
-	return NULL;
-}
 
 
 // sleep函数
@@ -86,16 +77,26 @@ ret_node* alex_sleep(ret_node* arg_list)
 	return NULL;
 }
 
-ret_node* alex_len(ret_node* arg_list)
+int alex_len(vm_env* vm_p)
 {
-	ret_node* ret = new_ret_node(sym_type_num);
-	alex_al* al = pop_arg_al(arg_list);
+	r_value al = pop_data(&vm_p->data_ptr);
 
-	if(al)
-		ret->ret_value.r_v.num = al->al_len;
-	return ret;
+	push_data(&vm_p->data_ptr, new_number(al.r_v.al->al_len));
+	return 1;
 }
 
+
+
+int alex_add(vm_env* vm_p)
+{
+	r_value r_v = pop_data(&vm_p->data_ptr);
+	r_value al =  pop_data(&vm_p->data_ptr);
+
+	push_data(&vm_p->data_ptr, add_al(al.r_v.al, r_v));
+
+	return 1;
+}
+/*
 ret_node* alex_add(ret_node* arg_list)
 {
 	alex_al* al = NULL;
@@ -128,7 +129,7 @@ ret_node* alex_add(ret_node* arg_list)
 
 	return NULL;
 }
-
+*/
 
 // rand  func
 ret_node* alex_rand(ret_node* arg_list)
@@ -156,8 +157,7 @@ ret_node* alex_rand(ret_node* arg_list)
 void alex_reg_lib(sym_table* g_t)
 {
 	srand((unsigned)time(0));
-	//reg_lib(g_t, "print", alex_print);
-	reg_lib(g_t, "print", alex_a_print);
+	reg_lib(g_t, "print", alex_print);
 	reg_lib(g_t, "create_window", alex_create_window);
 	reg_lib(g_t, "message_box", alex_message_box);
 	reg_lib(g_t, "sleep", alex_sleep);

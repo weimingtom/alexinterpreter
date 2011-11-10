@@ -114,7 +114,10 @@ typedef struct _vm_env
 //#define check_value(r_v)	_check_value(r_v)
 #define check_value(r_v)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error) { print("vm[error pc: %d] you are try pop a error value!\n", alex_vm_env.pc); return VM_ERROR_POP;} }while(0)
 #define check_at_value(r_v, tt)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error || t_r_v.r_t!=(tt)) return VM_ERROR_POP;}while(0) 
-#define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
+//#define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
+
+#define check_vm(rt)	(rt)
+
 #define next_pc(v_p)		((v_p)->pc++)
 extern vm_env alex_vm_env;
 

@@ -5,7 +5,7 @@
 #include <winuser.h>
 #include <tchar.h>
 #include "alex_interpret.h"
-
+#include "alex_vm.h"
 
 enum mes{
 	mes_pen=0x11234,
@@ -18,6 +18,6 @@ ret_node* alex_rectangle(ret_node* arg_list);
 int alex_window(ret_node* arg_list);
 ret_node* alex_reg_pen(ret_node* arg_list);
 ret_node* alex_reg_key(ret_node* arg_list);
-ret_node* alex_t_time(ret_node* arg_list);
+int alex_t_time(vm_env* vm_p);
 
 #endif

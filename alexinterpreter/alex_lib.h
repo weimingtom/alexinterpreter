@@ -14,7 +14,6 @@
 #define check_ret(a_l, a_t)	( ((a_l)==NULL || (a_l)->ret_value.r_t != a_t )?(0):(1) )
 
 ret_node* _pop_ret(ret_node** arg_list);
-ret_node* alex_print(ret_node* arg_list);
 void alex_reg_lib(sym_table* g_t);
 char* _pop_ret_str(ret_node** arg_list);
 ALEX_NUMBER _pop_ret_num(ret_node** arg_list);
