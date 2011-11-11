@@ -4,7 +4,7 @@ function main()
 {
 	var al  = [];
 	var index= 0;
-	var tt_len = 5;
+	var tt_len = 5000;
 	while(index < tt_len)
 	{
 		add(al, tt_len-index);
@@ -13,12 +13,12 @@ function main()
 	
 	
 	var b_t = t_time();
-	print(al);
+	#print(al);
 	print("\n begin sort! t_time = "+b_t+"\n");
 	sort(al);
 	var e_t = t_time();		
 	print("\n sort end! t_time = "+e_t+" off_time:"+(e_t-b_t)+"\n");
-	print(al);
+	#print(al);
 }
 
 function sort(var al)
