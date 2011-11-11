@@ -11,12 +11,13 @@
 
 typedef int (*vm_func)(vm_env*);
 
+r_value error_v = {0};
 vm_env alex_vm_env = {0};
 
 int vm_tp(vm_env* vm_p, alex_inst a_i);
-r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr);
+r_value _vm_get_var(vm_env* vm_p, e_gl gl, int addr);
 int push_call(vm_env* vm_p, r_value r_v);
-r_value top_data(d_data* d_ptr);
+r_value _top_data(d_data* d_ptr);
 int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v);
 int vm_add(vm_env* vm_p);
 int vm_pushvar(vm_env* vm_p, alex_inst a_i);
@@ -33,6 +34,34 @@ int vm_moveal(vm_env* vm_p, alex_inst a_i);
 int vm_addr(vm_env* vm_p, alex_inst a_i);
 int vm_s_b(vm_env* vm_p, alex_inst a_i, byte tt);
 
+
+#define vm_get_var_l(vm_p, addr)		(	\
+											((addr)>=0 && ( ((vm_p)->local_top+(addr)) < (vm_p)->local_ptr.data_len))?	\
+											((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)]):	\
+											(print("vm[error] get local is fail!\n"), error_v) \
+										)
+
+#define vm_get_var_g(vm_p, addr)		( \
+											( ((addr)<(vm_p)->global_ptr.data_len) && ((addr)>=0) )?	\
+											((vm_p)->global_ptr.root_ptr[(addr)]):	\
+											(print("vm[error] get global is fail!\n"), error_v)	\
+										)
+
+#define vm_get_var_r(vm_p, addr)	( (vm_p)->reg[(addr)] )
+
+#define vm_get_var(vm_p, gl, addr)		(  \
+											((gl)==COM_LOCAL)?	\
+											( vm_get_var_l((vm_p), (addr)) ):	\
+											( \
+												((gl)==COM_GLOBAL)?	\
+												( vm_get_var_g((vm_p), (addr)) ):	\
+												( \
+													((gl)==COM_REG)? \
+													( vm_get_var_r((vm_p), (addr)) ):	\
+													( print("vm[error] not find gl!\n"), error_v)	\
+												)  \
+											)	\
+										) 
 
 /*
 
@@ -72,6 +101,7 @@ int alex_vm(vm_env* vm_p)
 		}
 		
 		a_i = vm_p->code_ptr.root_ptr[vm_p->pc];
+
 		//	parse inst 
 		switch(i_t=vm_p->code_ptr.root_ptr[vm_p->pc].inst_type)
 		{
@@ -234,20 +264,21 @@ int vm_moveal(vm_env* vm_p, alex_inst a_i)
 	return VM_SUCCESS;
 }
 
+
 int vm_al(vm_env* vm_p, alex_inst a_i)
 {
 	r_value* at_al = NULL;
 	r_value r_index = {0};
 	r_value al = {0};
-/*	check_value(r_index=pop_data(&vm_p->data_ptr));
+	check_value(r_index=pop_data(&vm_p->data_ptr));
 	
 	if(r_index.r_t != sym_type_num)
 	{
 		print("vm[error line: %d] the al index is not number!\n", a_i.line);
 		return VM_ERROR_AL;
 	}
-	
-	check_vm(vm_addr(vm_p, a_i));
+
+  
 	check_value(al=vm_get_var(vm_p, a_i.gl, a_i.inst_value.r_v.addr));
 
 	if(al.r_t != sym_type_al)
@@ -264,7 +295,7 @@ int vm_al(vm_env* vm_p, alex_inst a_i)
 	
 	push_data(&vm_p->data_ptr, *at_al);
 
-*/	return VM_SUCCESS;
+	return VM_SUCCESS;
 }
 
 
@@ -343,7 +374,7 @@ int vm_jfalse(vm_env* vm_p, alex_inst a_i)
 
 	if((int)(bool_v.r_v.num)==0)
 	{
-		check_vm(vm_addr(vm_p, a_i));
+//		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i.inst_value.r_v.addr;
 		vm_p->pc--;
 	}
@@ -365,7 +396,7 @@ int vm_jtrue(vm_env* vm_p, alex_inst a_i)
 	
 	if((int)(bool_v.r_v.num))
 	{
-		check_vm(vm_addr(vm_p, a_i));
+//		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i.inst_value.r_v.addr;
 		vm_p->pc--;
 	}
@@ -375,7 +406,7 @@ int vm_jtrue(vm_env* vm_p, alex_inst a_i)
 
 int vm_jump(vm_env* vm_p, alex_inst a_i)
 {
-	check_vm(vm_addr(vm_p, a_i));
+//	check_vm(vm_addr(vm_p, a_i));
 	vm_p->pc = a_i.inst_value.r_v.addr;
 	vm_p->pc--;
 
@@ -483,66 +514,86 @@ int vm_move(vm_env* vm_p, alex_inst a_i)
 // 设置 gl addr 上地址上的值为 r_v
 int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 {
-	if(gl== COM_LOCAL)
+	switch(gl)
 	{
-		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
+	case COM_LOCAL:
 		{
-			r_value* r_p = &vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
-			check_l_gc(r_p);
-			check_r_gc(&r_v);
-			*r_p = r_v;
+			if(addr>=0 && (vm_p->local_top+addr < vm_p->local_ptr.data_len))
+			{
+				r_value* r_p = &vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
+				check_l_gc(r_p);
+				check_r_gc(&r_v);
+				*r_p = r_v;
+			}
+			else
+			{
+				print("vm[error] you are try access a error local var!\n");
+				return	VM_ERROR;
+			}
 		}
-		else
+		break;
+	case COM_GLOBAL:
 		{
-			print("vm[error] you are try access a error local var!\n");
-			return	VM_ERROR;
+			if(addr<vm_p->global_ptr.data_len && addr >=0)
+			{
+				r_value* r_p = &vm_p->global_ptr.root_ptr[addr];
+				check_l_gc(r_p);
+				check_r_gc(&r_v);
+				*r_p = r_v;
+			}
+			else
+			{
+				print("vm[error] you are try access a error global var!\n");
+				return VM_ERROR;
+			}
 		}
-	}
-	else if(gl == COM_GLOBAL)
-	{
-		if(addr<vm_p->global_ptr.data_len && addr >=0)
-		{
-			r_value* r_p = &vm_p->global_ptr.root_ptr[addr];
-			check_l_gc(r_p);
-			check_r_gc(&r_v);
-			*r_p = r_v;
-		}
-		else
-		{
-			print("vm[error] you are try access a error global var!\n");
-			return VM_ERROR;
-		}
+		break;
 	}
 
 	return VM_SUCCESS;
 }
 
 
-r_value vm_get_var(vm_env* vm_p, e_gl gl, int addr)
+
+r_value _vm_get_var(vm_env* vm_p, e_gl gl, int addr)
 {
-	r_value ret = {0};
-	if(gl== COM_LOCAL)
+	switch(gl)
 	{
-		if(addr>=0 && vm_p->local_top+addr < vm_p->local_ptr.data_len)
-			ret = vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
-		else
+	case COM_LOCAL:
 		{
-			print("vm[error] get local is fail!\n");
+			if(addr>=0 && ( (vm_p->local_top+addr) < vm_p->local_ptr.data_len))
+			{
+				return vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
+			}
+			else
+			{
+				print("vm[error] get local is fail!\n");
+			}
 		}
-	}
-	else if(gl == COM_GLOBAL)
-	{
-		if(addr<vm_p->global_ptr.data_len && addr >=0)
-			ret = vm_p->global_ptr.root_ptr[addr];
-		else
-			print("vm[error] get global is fail!\n");
-	}
-	else if(gl == COM_REG)
-	{
-		ret = vm_p->reg[addr];
+		break;
+	case COM_GLOBAL:
+		{
+			if( (addr<vm_p->global_ptr.data_len) && (addr>=0) )
+			{
+				return vm_p->global_ptr.root_ptr[addr];
+			}
+			else
+			{
+				print("vm[error] get global is fail!\n");
+			}
+		}
+		break;
+	case COM_REG:
+		{
+			return vm_p->reg[addr];
+		}
+		break;
+	default:
+		print("vm[error] not find gl!\n");
+		break;
 	}
 
-	return ret;
+	return error_v;
 }
 
 int vm_call(vm_env* vm_p, alex_inst a_i)
@@ -561,7 +612,6 @@ int vm_call(vm_env* vm_p, alex_inst a_i)
 
 		// record local top
 		push_call(vm_p, new_addr(vm_p->local_top));
-//		push_call(vm_p, new_addr(vm_p->local_ptr.data_len));
 
 		vm_p->local_top = vm_p->local_ptr.data_len;
 	}
@@ -764,7 +814,7 @@ void push_inst(c_inst* code_ptr, alex_inst a_i)
 }
 
 
-void push_data(d_data* d_ptr, r_value r_v)
+void _push_data(d_data* d_ptr, r_value r_v)
 {
 	if(d_ptr==NULL)
 		return;
@@ -773,7 +823,8 @@ void push_data(d_data* d_ptr, r_value r_v)
 	d_ptr->root_ptr[d_ptr->data_len++] = r_v;
 }
 
-r_value top_data(d_data* d_ptr)
+
+r_value _top_data(d_data* d_ptr)
 {
 	r_value ret = {0};
 	
@@ -783,7 +834,8 @@ r_value top_data(d_data* d_ptr)
 	return d_ptr->root_ptr[d_ptr->data_len-1];
 }
 
-r_value pop_data(d_data* d_ptr)
+
+r_value _pop_data(d_data* d_ptr)
 {
 	r_value  r_v = {0};
 	if(d_ptr==NULL)
@@ -801,7 +853,7 @@ r_value pop_data(d_data* d_ptr)
 	else
 	{
 		r_v = d_ptr->root_ptr[(--d_ptr->data_len)];
-		d_ptr->root_ptr[d_ptr->data_len].gc_p = NULL;
+		//d_ptr->root_ptr[d_ptr->data_len].gc_p = NULL;
 		//memset(&d_ptr->root_ptr[d_ptr->data_len], 0, sizeof(r_value));
 		return r_v;
 	}
@@ -857,18 +909,6 @@ int push_call(vm_env* vm_p, r_value r_v)
 	return (vm_p->call_ptr.data_len)++;	
 }
 
-int _check_value(r_value r_v)
-{
-	r_value t_r_v=(r_v);
-	if(t_r_v.r_t==sym_type_error) 
-	{ 
-		print("vm[error pc: %d]!\n", alex_vm_env.pc); 
-		vm_print(&alex_vm_env);
-		return VM_ERROR_POP;
-	}
-	
-	return VM_SUCCESS;
-}
 
 void vm_print(vm_env* vm_p)
 {

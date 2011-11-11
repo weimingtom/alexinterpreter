@@ -48,7 +48,7 @@ alex_al* _new_al(int def_count)
 }
 
 
-r_value* get_al(alex_al* al, int inx)
+r_value* _get_al(alex_al* al, int inx)
 {
 	if(al==NULL || al->al_len < inx || inx <0 )
 		return NULL;

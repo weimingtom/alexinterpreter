@@ -5,11 +5,12 @@
 #define DEF_AL_SIZE 256
 
 #define new_al() _new_al(0)
+#define get_al(al, inx)	( ((al)==NULL || (al)->al_len < (inx) || (inx) <0 )?(NULL):(&(((al)->al_v)[(inx)])) )
 
 alex_al* _new_al(int def_count);
 r_value add_al(alex_al* al, r_value r_v);
 void del_al(alex_al* al);
-r_value* get_al(alex_al* al, int inx);
+r_value* _get_al(alex_al* al, int inx);
 void free_value(r_value* rv);
 void copy_value(r_value* l_v_p, r_value r_v);
 

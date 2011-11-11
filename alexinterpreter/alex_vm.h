@@ -1,6 +1,7 @@
 #ifndef _ALEX_VM_H_
 #define _ALEX_VM_H_
 #include "alex_sym.h"
+#include "alex_log.h"
 
 #define CODE_MEM_LEN	512			// 默认代码段长度
 #define DATA_MEM_LEN	64			// 默认操作数据堆栈段长度
@@ -76,6 +77,7 @@ typedef struct _alex_inst
 	ubyte inst_type;		// 指令类型
 	ubyte gl;				// global or local?
 	r_value inst_value;		// 指令操作值
+
 	int line;				// 指令对应的代码行
 }alex_inst;
 
@@ -96,8 +98,8 @@ typedef struct _d_data
 
 typedef struct _vm_env
 {
-	c_inst		code_ptr;	// 代码段指针				
-	int			pc;			// 程序计数器
+	c_inst		code_ptr;		// 代码段指针				
+	int			pc;				// 程序计数器
 
 	r_value		reg[REG_LEN];// 寄存器
 	d_data		data_ptr;	// 数据堆栈段指针
@@ -114,15 +116,21 @@ typedef struct _vm_env
 #define relloc_local(d_d)	relloc_data((d_d), LOCAL_MEM_LEN)
 #define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
 #define relloc_call(d_d)	relloc_data((d_d), CALL_MEM_LEN)
-//#define check_value(r_v)	_check_value(r_v)
 #define check_value(r_v)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error) { print("vm[error pc: %d] you are try pop a error value!\n", alex_vm_env.pc); return VM_ERROR_POP;} }while(0)
 #define check_at_value(r_v, tt)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error || t_r_v.r_t!=(tt)) return VM_ERROR_POP;}while(0) 
-//#define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
+#define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
 
-#define check_vm(rt)	(rt)
-
+//#define pop_data		_pop_data
+//#define pop_data(dp)	((dp)->root_ptr[(--((dp)->data_len))])
+#define  pop_data(dp)  ( ((dp)==NULL || (dp)->data_len<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), error_v):((dp)->root_ptr[(--(dp)->data_len)])  )
+#define top_data(dp)	( ((dp)==NULL || (dp)->data_len<=0)?(error_v):((dp)->root_ptr[(dp)->data_len-1]) )
+#define push_data(dp, r)	do{if((dp)) {relloc_data((dp), DATA_MEM_LEN);(dp)->root_ptr[(dp)->data_len++] = (r);} }while(0)
+//#define push_data 	_push_data
 #define next_pc(v_p)		((v_p)->pc++)
 extern vm_env alex_vm_env;
+extern r_value error_v;
+
+
 
 c_inst* relloc_code(c_inst* c_i);
 d_data* relloc_data(d_data* d_d, int d_len);
@@ -133,10 +141,9 @@ void push_inst(c_inst* code_ptr, alex_inst a_i);
 void push_stack(vm_env* vm_p, r_value r_v);
 int push_local(vm_env* vm_p, r_value r_v);
 int push_global(vm_env* vm_p, r_value r_v);
-r_value pop_data(d_data* d_ptr);
-void push_data(d_data* d_ptr, r_value r_v);
+r_value _pop_data(d_data* d_ptr);
+void _push_data(d_data* d_ptr, r_value r_v);
 int alex_vm(vm_env* vm_p);
-int _check_value(r_value r_v);
 void vm_print(vm_env* vm_p);
 
 #endif
