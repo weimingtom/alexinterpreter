@@ -39,7 +39,21 @@ int gc_del_str(char* str)
 	}
 
 	return 0;
+}
 
+int gc_del_al(alex_al* al_p)
+{
+	int i=0;
+	if(al_p==NULL)
+		return 0;
+	
+	for(i=0; i<al_p->al_len; i++)
+		check_l_gc(&(al_p->al_v[i]));
+	
+	free(al_p->al_v);
+	free(al_p);
+	
+	return 1;
 }
 
 gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
@@ -148,14 +162,33 @@ r_value gc_new_al(int count)
 	return ret;
 }
 
-int gc_back()
+
+void gc_print()
+{
+	char* tt[] = {
+		"dead",
+		"live"
+	};
+	gc_node* gc_p = alex_gc.gc_head;
+
+	print("\n------gc print------ \n");
+	while(gc_p)
+	{
+		print("node:LEVE[%s] type[%d] count[%d]->\n", tt[gc_p->gc_level], gc_p->gc_value.sg_t, gc_p->gc_count);
+		gc_p = gc_p->next;
+	}
+	print("\n------gc print end----\n");
+}
+
+int _gc_back(int gc_cl_size)
 {
 	gc_node* gc_p= alex_gc.gc_head;
 	gc_node* gc_b = gc_p;
 
-	if(alex_gc.gc_size < GC_CLEAR_LEN)
+	if(alex_gc.gc_size < gc_cl_size)
 		return 0;
 
+	gc_print();
 	while(gc_p)
 	{
 		if(gc_p->gc_level==GC_DEAD || gc_p->gc_count > 0)
@@ -177,8 +210,18 @@ int gc_back()
 				free(gc_p);
 				gc_p = now_n;
 			}
+			alex_gc.gc_size--;
 			break;
 		case sym_type_al:
+			{
+				gc_node* now_n = gc_p->next;
+				gc_b->next = now_n;
+				
+				gc_del_al(gc_p->gc_value.sg_v.al);
+				free(gc_p);
+				gc_p = now_n;
+			}
+			alex_gc.gc_size--;
 			break;
 		default:
 			print("gc[error], not konw gc_value!\n");

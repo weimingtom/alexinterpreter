@@ -107,6 +107,7 @@ int alex_vm(vm_env* vm_p)
 		{
 		case END:
 			{
+				_gc_back(0);
 				print("\n\n-----inst success end-----\n\n");
 			}
 			return VM_SUCCESS;
@@ -261,6 +262,8 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 	check_r_gc(&al_r_v);
 	
 	*al_l_p = al_r_v;
+	
+	gc_back();
 	return VM_SUCCESS;
 }
 
@@ -524,6 +527,8 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 				check_l_gc(r_p);
 				check_r_gc(&r_v);
 				*r_p = r_v;
+				
+				gc_back();
 			}
 			else
 			{
@@ -649,6 +654,8 @@ int vm_ret(vm_env* vm_p, alex_inst* a_i_p)
 	}
 
 	vm_p->local_top = local_top_value.r_v.addr;
+
+	gc_back();
 	return VM_SUCCESS;
 }
 
