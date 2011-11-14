@@ -934,6 +934,17 @@ ALEX_NUMBER pop_number(vm_env* vm_p)
 	return ret;
 }
 
+int push_number(vm_env* vm_p, ALEX_NUMBER num)
+{
+	if(vm_p)
+	{
+		push_data(&vm_p->data_ptr, new_number(num));
+		return VM_SUCCESS;
+	}
+
+	return VM_ERROR;
+}
+
 ALEX_STRING pop_string(vm_env* vm_p)
 {
 	ALEX_STRING ret = {0};
@@ -949,6 +960,16 @@ ALEX_STRING pop_string(vm_env* vm_p)
 	return ret;
 }
 
+int push_string(vm_env* vm_p, char* str)
+{
+	if(vm_p && str)
+	{
+		push_data(&vm_p->data_ptr, gc_new_string(str, GC_LIVE));
+		return VM_SUCCESS;
+	}
+
+	return VM_ERROR;
+}
 
 alex_al* pop_al(vm_env* vm_p)
 {
@@ -964,3 +985,29 @@ alex_al* pop_al(vm_env* vm_p)
 	
 	return ret;
 }
+
+
+int push_al(vm_env* vm_p, r_value al)
+{
+	if(vm_p && al.r_t==sym_type_al)
+	{
+		push_data(&vm_p->data_ptr, al);
+	}
+
+	return VM_ERROR;
+}
+
+void* pop_ptr(vm_env* vm_p)
+{
+	if(vm_p)
+	{
+		r_value r_v = {0};
+		r_v = _pop_data(&vm_p->data_ptr);
+
+		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_pointer)
+			return r_v.r_v.ptr;
+	}
+
+	return NULL;
+}
+

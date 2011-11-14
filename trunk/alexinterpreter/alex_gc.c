@@ -186,7 +186,6 @@ int _gc_back_()
 	gc_node* gc_b = gc_p;
 
 
-	gc_print();
 	while(gc_p)
 	{
 		if(gc_p->gc_level==GC_DEAD || gc_p->gc_count > 0)
