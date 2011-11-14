@@ -52,8 +52,10 @@ extern a_gc alex_gc;
 r_value gc_new_string(char* str, e_gc_level gc_l);
 #define check_l_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count--; }while(0)
 #define check_r_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count++; }while(0)
-#define gc_back()			_gc_back(GC_CLEAR_LEN)
+#define _gc_back(gs)	   (alex_gc.gc_size < (gs))?(0):(_gc_back_());
+#define gc_back()	    _gc_back(GC_CLEAR_LEN)
+
 r_value gc_new_al(int count);
-int _gc_back(int gc_cl_size);
+int _gc_back_();
 
 #endif

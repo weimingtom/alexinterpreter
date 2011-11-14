@@ -1,52 +1,9 @@
-
-
 function main()
-{
-	var al  = [];
-	var index= 0;
-	var tt_len = 5000;
-	while(index < tt_len)
-	{
-		add(al, tt_len-index);
-		index++;
-	}
-	
-	
-	var b_t = t_time();
-	#print(al);
-	print("\n begin sort! t_time = "+b_t+"\n");
-	sort(al);
-	var e_t = t_time();		
-	print("\n sort end! t_time = "+e_t+" off_time:"+(e_t-b_t)+"\n");
-	#print(al);
+{	
+	var al = [1,2, [3, 3]];
+	var al_0 = al[2];
+	al_0[1] = al;
 }
 
-function sort(var al)
-{
-	var i = 0;
-	var j = 0;
-	var max_index = 0;
-	var temp = 0;
-	var al_len = len(al);
-	
-	while( i<al_len )
-	{
-		max_index = i;
-		j=i;
-		while(j<al_len )
-		{
-			if(al[max_index]>al[j])
-				max_index = j;
-				
-			j++;
-		}
-		
-		temp = al[i];
-		al[i] = al[max_index];
-		al[max_index] = temp;
-	
-		i++;
-	}	
-}
 
 main();
