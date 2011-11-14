@@ -130,6 +130,8 @@ typedef struct _vm_env
 ALEX_NUMBER pop_number(vm_env* vm_p);
 ALEX_STRING pop_string(vm_env* vm_p);
 alex_al* pop_al(vm_env* vm_p);
+int push_al(vm_env* vm_p, r_value al);
+void* pop_ptr(vm_env* vm_p);
 
 
 #define next_pc(v_p)		((v_p)->pc++)
@@ -151,5 +153,10 @@ void _push_data(d_data* d_ptr, r_value r_v);
 
 int alex_vm(vm_env* vm_p);
 void vm_print(vm_env* vm_p);
+
+
+int push_number(vm_env* vm_p, ALEX_NUMBER num);
+ALEX_STRING pop_string(vm_env* vm_p);
+int push_string(vm_env* vm_p, char* str);
 
 #endif

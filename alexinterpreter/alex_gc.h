@@ -5,7 +5,7 @@
 #include "alex_conf.h"
 
 #define GC_STR_TABLE_LEN		(128)
-#define GC_CLEAR_LEN			(24)
+#define GC_CLEAR_LEN			(256)
 
 // gc level
 typedef enum _e_gc_level{
