@@ -96,40 +96,7 @@ int alex_add(vm_env* vm_p)
 
 	return 1;
 }
-/*
-ret_node* alex_add(ret_node* arg_list)
-{
-	alex_al* al = NULL;
-	ret_node* r_al = pop_arg(arg_list);
-	
-	if(check_ret(r_al, sym_type_al))
-	{	
-		al = (r_al->ret_value.r_v.al);
-		while(arg_list)
-		{
-			ret_node* n_ar = arg_list->next;
-			(check_ret(arg_list, sym_type_al))?(arg_list->ret_value.r_v.al->count++):(0);
-			arg_list = (check_ret(arg_list, sym_type_alp))?(arg_list->next=NULL, al_ptov(arg_list)):(arg_list);
-			add_al(al, arg_list->ret_value);
-			arg_list = n_ar;
-		}
-	}
-	else if(check_ret(r_al, sym_type_alp))
-	{
-		r_value* r_p = r_al->ret_value.r_v.ptr;
-		if(r_p->r_t == sym_type_al)
-		{
-			while(arg_list)
-			{
-				add_al(r_p->r_v.al, arg_list->ret_value);
-				arg_list = arg_list->next;
-			}	
-		}
-	}
 
-	return NULL;
-}
-*/
 
 // rand  func
 ret_node* alex_rand(ret_node* arg_list)

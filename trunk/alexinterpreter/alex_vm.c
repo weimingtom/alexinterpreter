@@ -14,6 +14,7 @@ typedef int (*vm_func)(vm_env*);
 r_value error_v = {0};
 vm_env alex_vm_env = {0};
 
+
 int vm_tp(vm_env* vm_p, alex_inst* a_i_p);
 r_value _vm_get_var(vm_env* vm_p, e_gl gl, int addr);
 int push_call(vm_env* vm_p, r_value r_v);
@@ -916,4 +917,50 @@ void vm_print(vm_env* vm_p)
 	print("global stack:  len[%.5d], size[%.5d]\n", vm_p->global_ptr.data_len, vm_p->global_ptr.data_size);
 	print("gc:            size[%.5d]\n", alex_gc.gc_size);
 	print("--------vm state end---------\n");
+}
+
+ALEX_NUMBER pop_number(vm_env* vm_p)
+{
+	ALEX_NUMBER ret = 0;
+	if(vm_p)
+	{
+		r_value r_v = {0};
+		r_v = _pop_data(&vm_p->data_ptr);
+
+		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_num)
+			ret = r_v.r_v.num;
+	}
+
+	return ret;
+}
+
+ALEX_STRING pop_string(vm_env* vm_p)
+{
+	ALEX_STRING ret = {0};
+	if(vm_p)
+	{
+		r_value r_v = {0};
+		r_v = _pop_data(&vm_p->data_ptr);
+
+		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_string)
+			ret = r_v.r_v.str;
+	}
+
+	return ret;
+}
+
+
+alex_al* pop_al(vm_env* vm_p)
+{
+	alex_al* ret = NULL;
+	if(vm_p)
+	{
+		r_value r_v = {0};
+		r_v = _pop_data(&vm_p->data_ptr);
+		
+		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_al)
+			ret = r_v.r_v.al;
+	}
+	
+	return ret;
 }

@@ -126,10 +126,15 @@ typedef struct _vm_env
 #define top_data(dp)	( ((dp)==NULL || (dp)->data_len<=0)?(error_v):((dp)->root_ptr[(dp)->data_len-1]) )
 #define push_data(dp, r)	do{if((dp)) {relloc_data((dp), DATA_MEM_LEN);(dp)->root_ptr[(dp)->data_len++] = (r);} }while(0)
 //#define push_data 	_push_data
+
+ALEX_NUMBER pop_number(vm_env* vm_p);
+ALEX_STRING pop_string(vm_env* vm_p);
+alex_al* pop_al(vm_env* vm_p);
+
+
 #define next_pc(v_p)		((v_p)->pc++)
 extern vm_env alex_vm_env;
 extern r_value error_v;
-
 
 
 c_inst* relloc_code(c_inst* c_i);
@@ -143,6 +148,7 @@ int push_local(vm_env* vm_p, r_value r_v);
 int push_global(vm_env* vm_p, r_value r_v);
 r_value _pop_data(d_data* d_ptr);
 void _push_data(d_data* d_ptr, r_value r_v);
+
 int alex_vm(vm_env* vm_p);
 void vm_print(vm_env* vm_p);
 

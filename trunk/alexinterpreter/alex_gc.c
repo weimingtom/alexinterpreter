@@ -180,13 +180,11 @@ void gc_print()
 	print("\n------gc print end----\n");
 }
 
-int _gc_back(int gc_cl_size)
+int _gc_back_()
 {
 	gc_node* gc_p= alex_gc.gc_head;
 	gc_node* gc_b = gc_p;
 
-	if(alex_gc.gc_size < gc_cl_size)
-		return 0;
 
 	gc_print();
 	while(gc_p)
