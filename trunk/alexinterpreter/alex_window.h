@@ -15,8 +15,8 @@ int alex_clear(vm_env* vm_p);
 int alex_create_window(vm_env* vm_p);
 int alex_message_box(vm_env* vm_p);
 int alex_rectangle(vm_env* vm_p);
-int alex_reg_pen(vm_env* vm_p);
 int alex_reg_key(vm_env* vm_p);
 int alex_t_time(vm_env* vm_p);
+int alex_get_key(vm_env* vm_p);
 
 #endif

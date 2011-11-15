@@ -44,15 +44,22 @@ typedef struct _str_table{
 typedef struct _a_gc{
 	gc_node* gc_head;
 	int		 gc_size;
-	
+	int		 c_size;
 	str_table gc_str_table;
 }a_gc;
 
 extern a_gc alex_gc;
 r_value gc_new_string(char* str, e_gc_level gc_l);
-#define check_l_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count--; }while(0)
+#define check_l_gc(p)		do{ \
+								if((p)->gc_p) \
+								{	\
+									((gc_node*)((p)->gc_p))->gc_count--;	\
+									if(((gc_node*)((p)->gc_p))->gc_count <= 0)	\
+										alex_gc.c_size++;	\
+								} \
+							}while(0)
 #define check_r_gc(p)  do{ if((p)->gc_p) ((gc_node*)((p)->gc_p))->gc_count++; }while(0)
-#define _gc_back(gs)	   (alex_gc.gc_size < (gs))?(0):(_gc_back_());
+#define _gc_back(gs)	   (alex_gc.c_size < (gs))?(0):(_gc_back_());
 #define gc_back()	    _gc_back(GC_CLEAR_LEN)
 
 r_value gc_new_al(int count);

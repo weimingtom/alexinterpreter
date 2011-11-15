@@ -6,7 +6,7 @@
 typedef  struct _w_handle{
 	HDC hdc;
 	HWND w_m;
-	r_value key_func;
+	int key;
 }w_handle;
 
 #define MAX_WINDOW_LEN 24
@@ -19,8 +19,8 @@ DWORD WINAPI ms_tt(LPVOID lp);
 // 显示消息函数
 int alex_message_box(vm_env* vm_p)
 {
-	a_string n = pop_string(vm_p);
 	a_string t = pop_string(vm_p);
+	a_string n = pop_string(vm_p);
 	
 	MessageBox(	NULL,
 		t.s_ptr,
@@ -39,21 +39,32 @@ int alex_t_time(vm_env* vm_p)
 	return 1;
 }
 
+int search_handle(HWND hWnd)
+{
+	int i;
+
+	for(i=0; (i<MAX_WINDOW_LEN) && hWnd; i++)
+	{
+		if(handle_list[i].w_m == hWnd)
+			return i;
+	}
+
+	return -1;
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
-	
+	int handle = -1;
+
 	switch(message) 
 	{
 	case  WM_KEYDOWN:
-/*		if(w_func[1].r_t != sym_type_error)
-		{
-			push_number(&alex_vm_env, (ALEX_NUMBER)wParam);
-			vm_p_call(&alex_vm_env, &w_func[1]);
-		}
-*/		break;
+		handle = search_handle(hWnd);
+		if(handle != -1)
+			handle_list[handle].key = (int)wParam;
+		break;
 	case WM_CREATE:
 		break;
 	case WM_COMMAND:
@@ -89,83 +100,23 @@ int alex_rectangle(vm_env* vm_p)
 	return 0;
 }
 
-// 窗口消息线程
-DWORD WINAPI mes_tp(LPVOID lp)
+int alex_get_key(vm_env* vm_p)
 {
-	byte* t_lp = (byte*)lp;
-	ALEX_FUNC func = NULL;
-	int tt = 0;
-	HWND hd = *((HWND*)t_lp);
-	t_lp +=sizeof(hd);
-	func = *((ALEX_FUNC*)t_lp);
-	t_lp += sizeof(ALEX_FUNC);
-	tt = *((int*)t_lp);
-
-	Sleep(tt);
-	SendMessage(hd, mes_pen, 0, 0);
-	InvalidateRect(hd, NULL, TRUE);
-	free(lp);
-	return 0;
-} 
-
-
-
-// 注册绘制事件
-int alex_reg_pen(vm_env* vm_p)
-{
-	DWORD tp;
-	byte* lp = NULL;
-	byte* t_lp = NULL;
-	
-	int tt = (int)pop_number(vm_p);
-	r_value func = pop_func(vm_p);
-	HWND hd = (HWND)pop_ptr(vm_p);
-	
-	int len = sizeof(HWND)+sizeof(r_value)+sizeof(int);
-	lp = (byte*)malloc(len);
-	memset(lp, 0, len);
-
-	t_lp = lp;
-	*((HWND*)lp) = hd;
-	lp +=sizeof(hd);
-	*((r_value*)lp) = func;
-	lp +=sizeof(func);
-	*((int*)lp) = tt;
-
-	CreateThread(NULL, 0, mes_tp, t_lp, 0, &tp);
-	return 0;
-}
-
-
-int alex_reg_key(vm_env* vm_p)
-{
-	HWND hd;
-//	w_func[1] = pop_func(vm_p);
-	hd = (HWND)pop_ptr(vm_p);
-
-	return 0;
-}
-
-DWORD WINAPI ms_tt(LPVOID lp)
-{
-	int i=0;
-	while(1)
+	int ret = 0;
+	int handle = (int)pop_number(vm_p);
+	if(handle_list[handle].key)
 	{
-		Rectangle(handle_list[0].hdc, 40+i*10, 40, 200+i*10, 100);
-		ValidateRect(handle_list[0].w_m, NULL);
-		UpdateWindow(handle_list[0].w_m);
-
-		i++;
-		print(" i= %d\n", i);
-		Sleep(1000);
+		ret = handle_list[handle].key;
+		handle_list[handle].key = 0;
 	}
-	return 0;
+
+	push_number(vm_p, (ALEX_NUMBER)ret);
+	return 1;
 }
+
 
 DWORD WINAPI create_window_p(LPVOID lp)
 {
-
-	DWORD tp;
 	byte* w_lp = lp;
 	MSG msg;
 	a_string name={0};
@@ -212,8 +163,6 @@ DWORD WINAPI create_window_p(LPVOID lp)
 	UpdateWindow(handle_list[handle].w_m);
 
 	handle_list[handle].hdc = GetWindowDC(handle_list[handle].w_m);
-
-//	CreateThread(NULL, 0, ms_tt, NULL, 0, &tp);
 
 	free(lp);
 	// 主消息循环:
@@ -278,11 +227,13 @@ int alex_create_window(vm_env* vm_p)
 	*((int*)m_p_p) = handle;
 
 	CreateThread(NULL, 0, create_window_p, m_p, 0, &tp);
-//	create_window_p((LPVOID)m_p);
-	while(handle>=0 && (handle_list[handle].w_m==NULL || handle_list[handle].hdc ==NULL))
-	{}
+	while(1)
+	{
+		if(handle>=0 && (handle_list[handle].w_m==NULL || handle_list[handle].hdc ==NULL))
+			break;
+	}
 	
-//	CreateThread(NULL, 0, ms_tt, NULL, 0, &tp);
+	
 	push_number(vm_p, (ALEX_NUMBER)handle);
 	return 1;
 }

@@ -122,7 +122,7 @@ int alex_vm(vm_env* vm_p)
 			check_vm(vm_pushvar(vm_p, a_i_p));
 			break;
 		case POP:
-			pop_data(&vm_p->data_ptr);
+			check_value(pop_data(&vm_p->data_ptr));
 			break;
 		case NEWAL:
 			check_vm(vm_newal(vm_p, a_i_p));

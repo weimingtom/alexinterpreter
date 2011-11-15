@@ -251,13 +251,13 @@ int com_seg(com_env* com_p, tree_node* t_n)
 
 int com_return(com_env* com_p, tree_node* t_n)
 {
-	t_n = t_n->childs_p[0];
-	if(t_n==NULL)			// not return value
+	if(t_n->childs_p[0]==NULL)			// not return value
 	{
-		push_inst(&com_p->com_inst, new_inst(RET));
+		com_return_assume(com_p, t_n);
 	}
 	else
 	{
+		t_n = t_n->childs_p[0];
 		check_com(com_exp(com_p, t_n));
 		push_inst(&com_p->com_inst, new_inst(RET));
 	}
