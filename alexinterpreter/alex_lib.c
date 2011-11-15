@@ -5,6 +5,7 @@
 #include "alex_interpret.h"
 #include "alex_window.h"
 #include "alex_vm.h"
+#include "alex_gc.h"
 #include <time.h>
 
 
@@ -123,9 +124,8 @@ void alex_reg_lib(sym_table* g_t)
 	reg_lib(g_t, "create_window", alex_create_window);
 	reg_lib(g_t, "message_box", alex_message_box);
 	reg_lib(g_t, "sleep", alex_sleep);
-	reg_lib(g_t, "add", alex_add);
-	reg_lib(g_t, "reg_pen", alex_reg_pen);
-	reg_lib(g_t, "reg_key", alex_reg_key);
+	reg_lib(g_t, "add", alex_add);;
+	reg_lib(g_t, "get_key", alex_get_key);
 	reg_lib(g_t, "rectangle", alex_rectangle);
 	reg_lib(g_t, "rand", alex_rand);
 	reg_lib(g_t, "len", alex_len);

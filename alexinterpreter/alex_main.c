@@ -31,18 +31,15 @@ int  alex_run(char* file)
 	
 	if(alex_com(com_env_p, m_tree.head, f_tree.head)==COM_SUCCESS)
 	{
-		if(com_print(com_env_p) == COM_SUCCESS)
+//		if(com_print(com_env_p) == COM_SUCCESS)
 		{
 			com_to_vm(com_env_p);
 			print("\n\n -----CONSEL-----\n");
 			alex_vm(&alex_vm_env);
 
-			vm_print(&alex_vm_env);
+//			vm_print(&alex_vm_env);
 		}
 	}
-	
-	
-//	alex_interpret(env, m_tree.head);
 	
 	return 1;
 }
@@ -57,8 +54,8 @@ void alex_free()
 int main(int arg, char* arg_list[])
 {
 	alex_init();
-	alex_run(".\\snake.alx");
-	print("please any key to be continue!\n");
+	alex_run(arg_list[1]);
+/*	print("please any key to be continue!\n");
 	getchar();
-	return 0;
+*/	return 0;
 }

@@ -25,11 +25,13 @@ int gc_del_str(char* str)
 	str_p = alex_gc.gc_str_table.str_ptr[index];
 	str_b = str_p;
 
-	while(str_p && str_p->next)
+	while(str_p)
 	{
 		if(alex_strcmp(str_p->str, str)==0)
 		{
 			str_b->next = str_p->next;
+			if(str_b==str_p)
+				alex_gc.gc_str_table.str_ptr[index] = str_p->next;
 			free(str_p);
 			return 1;
 		}
@@ -74,10 +76,8 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 	while(str_p)
 	{
 		if(alex_strcmp(str_p->str, str)== 0)
-		{
-			str_p->gc_p->gc_count++;
 			return str_p->gc_p;
-		}
+		
 		back_p = str_p;
 		str_p = str_p->next;
 	}
@@ -177,7 +177,7 @@ void gc_print()
 	print("\n------gc print------ \n");
 	while(gc_p)
 	{
-		print("node:LEVE[%s] type[%d] count[%d]->\n", tt[gc_p->gc_level], gc_p->gc_value.sg_t, gc_p->gc_count);
+		print("node:LEVE[%s] type[%d] count[%d]-> \"%s\"\n", tt[gc_p->gc_level], gc_p->gc_value.sg_t, gc_p->gc_count, (gc_p->gc_value.sg_t==sym_type_string)?(gc_p->gc_value.sg_v.str.s_ptr):(" al "));
 		gc_p = gc_p->next;
 	}
 	print("\n------gc print end----\n");
@@ -208,9 +208,10 @@ int _gc_back_()
 				gc_del_str(gc_p->gc_value.sg_v.str.s_ptr);
 				free_string(&gc_p->gc_value.sg_v.str);
 				free(gc_p);
+				if(gc_p==alex_gc.gc_head)
+					alex_gc.gc_head = now_n;
 				gc_p = now_n;
 			}
-			alex_gc.gc_size--;
 			break;
 		case sym_type_al:
 			{
@@ -219,16 +220,20 @@ int _gc_back_()
 				
 				gc_del_al(gc_p->gc_value.sg_v.al);
 				free(gc_p);
+				if(gc_p==alex_gc.gc_head)
+					alex_gc.gc_head = now_n;
 				gc_p = now_n;
 			}
-			alex_gc.gc_size--;
 			break;
 		default:
 			print("gc[error], not konw gc_value!\n");
 			return 1;
-		}	
+		}
+		
+		alex_gc.gc_size--;
 	}
 
+	alex_gc.c_size = 0;
 	return 0;
 }
 
