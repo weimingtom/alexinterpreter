@@ -69,12 +69,12 @@ int alex_print(vm_env* vm_p)
 
 
 // sleepº¯Êý
-ret_node* alex_sleep(ret_node* arg_list)
+int alex_sleep(vm_env* vm_p)
 {
-	int w_t = (int)pop_arg_num(arg_list);
+	int w_t = (int)pop_number(vm_p);
 	Sleep((DWORD)w_t);
 
-	return NULL;
+	return 0;
 }
 
 int alex_len(vm_env* vm_p)
@@ -99,26 +99,21 @@ int alex_add(vm_env* vm_p)
 
 
 // rand  func
-ret_node* alex_rand(ret_node* arg_list)
+int alex_rand(vm_env* vm_p)
 {
-	ret_node* ret = new_ret_node(sym_type_num);
-	int b_r = (int)pop_arg_num(arg_list);
-	int e_r = (int)pop_arg_num(arg_list);
-	int  ret_n = 0;
-
+	int e_r = (int)pop_number(vm_p);
+	int b_r = (int)pop_number(vm_p);
+	int ret_n =0;
 	
 	ret_n = rand();
-	
 	if(e_r - b_r  <= 0)
-		ret->ret_value.r_v.num = 0;
+		ret_n = 0;
 	else
-	{
 		ret_n = (ret_n % (e_r-b_r)) + b_r;
-		ret->ret_value.r_v.num = ret_n;
-	}
-	return ret;
-}
 
+	push_number(vm_p, (ALEX_NUMBER)ret_n);
+	return 1;
+}
 
 
 void alex_reg_lib(sym_table* g_t)
@@ -135,6 +130,7 @@ void alex_reg_lib(sym_table* g_t)
 	reg_lib(g_t, "rand", alex_rand);
 	reg_lib(g_t, "len", alex_len);
 	reg_lib(g_t, "t_time", alex_t_time);
+	reg_lib(g_t, "clear", alex_clear);
 }	
 
 
@@ -149,66 +145,4 @@ char* _pop_ret_str(ret_node** arg_list)
 	*arg_list = (*arg_list)->next;
 
 	return ret;
-}
-
-alex_al* _pop_ret_al(ret_node** arg_list)
-{
-	alex_al* al = NULL;
-	if(*arg_list==NULL || check_ret(*arg_list, sym_type_al)==0)
-		return NULL;
-
-	al = (*arg_list)->ret_value.r_v.al;
-	*arg_list = (*arg_list)->next;
-
-	return al;
-}
-
-void* _pop_ret_ptr(ret_node** arg_list)
-{
-	void* ret = NULL;
-
-	if(*arg_list==NULL || (check_ret(*arg_list, sym_type_pointer)==0 && check_ret(*arg_list, sym_type_alp)==0))
-		return NULL;
-	ret = (*arg_list)->ret_value.r_v.ptr;
-	*arg_list = (*arg_list)->next;
-	
-	return ret;
-
-}
-
-ALEX_NUMBER _pop_ret_num(ret_node** arg_list)
-{
-	ALEX_NUMBER ret = 0;
-
-	if(*arg_list==NULL || check_ret(*arg_list, sym_type_num)==0)
-		return 0;
-	
-	ret = (*arg_list)->ret_value.r_v.num;
-	*arg_list = (*arg_list)->next;
-	
-	return ret;
-}
-
-
-
-ALEX_FUNC _pop_ret_func(ret_node** arg_list)
-{
-	ALEX_FUNC ret = 0;
-	
-	if(*arg_list==NULL || (check_ret(*arg_list, sym_type_func)==0 && check_ret(*arg_list, sym_type_reg_func)==0))
-		return NULL;
-	
-	ret = (*arg_list)->ret_value.r_v.func;
-	*arg_list = (*arg_list)->next;
-	
-	return ret;
-}
-
-
-ret_node* _pop_ret(ret_node** arg_list)
-{
-	ret_node* rt = *arg_list;
-	*arg_list = (*arg_list)?((*arg_list)->next):(NULL);
-
-	return rt;
 }

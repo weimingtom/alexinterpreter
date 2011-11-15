@@ -346,44 +346,44 @@ tree_node* syn_seg_def(token_list* t_lt)
 			{
 				syn_watch(t_lt, token_type_lseg);		// watch {
 				*nrt_n = syn_seg_def(t_lt);
-				 nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 				 syn_watch(t_lt, token_type_rseg);		// watch }
 			}
 			break;
 		case token_type_var:
 			{
 				*nrt_n = syn_var_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_if:
 			{
 				*nrt_n = syn_if_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_while:
 			{
 				*nrt_n = syn_while_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_continue:
 			{
 				*nrt_n = syn_continue_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_break:
 			{
 				*nrt_n = syn_break_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_return:
 			{
 				*nrt_n = syn_return_def(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		case token_type_rseg:
@@ -391,11 +391,11 @@ tree_node* syn_seg_def(token_list* t_lt)
 		default:
 			{
 				*nrt_n = syn_exp_stmt(t_lt);
-				nrt_n = &((*nrt_n)->next);
+				nrt_n = (*nrt_n)?(&((*nrt_n)->next)):(NULL);
 			}
 			break;
 		}
-	}while( seg_flag && type_token(t_lt) != token_type_rseg);			//  if not find { is loop
+	}while( nrt_n && seg_flag && (type_token(t_lt) != token_type_rseg) );			//  if not find { is loop
 
 	if(seg_flag)
 		syn_watch(t_lt, token_type_rseg);

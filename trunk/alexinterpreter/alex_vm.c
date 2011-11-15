@@ -598,21 +598,31 @@ int vm_call(vm_env* vm_p, alex_inst* a_i_p)
 	
 	// get jump addr
 	check_value(r_v=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
-	
-	if(r_v.r_t == sym_type_addr)		// alex func
+	check_vm(vm_p_call(vm_p, &r_v));
+
+	return VM_SUCCESS;
+}
+
+int vm_p_call(vm_env* vm_p, r_value* r_v_p)
+{
+	if(r_v_p==NULL || vm_p==NULL)
+	{
+		return VM_ERROR;
+	}
+	else if(r_v_p->r_t == sym_type_addr)		// alex func
 	{
 		// record pc
 		push_call(vm_p, new_addr(vm_p->pc));
-		vm_p->pc = r_v.r_v.addr;
-
+		vm_p->pc = r_v_p->r_v.addr;
+		
 		// record local top
 		push_call(vm_p, new_addr(vm_p->local_top));
-
+		
 		vm_p->local_top = vm_p->local_ptr.data_len;
 	}
-	else if(r_v.r_t == sym_type_reg_func)		// reg func
+	else if(r_v_p->r_t == sym_type_reg_func)		// reg func
 	{
-		vm_func func_p = (vm_func)r_v.r_v.func;	
+		vm_func func_p = (vm_func)r_v_p->r_v.func;	
 		int ret = func_p(vm_p);
 		if(ret==0)
 		{
@@ -620,19 +630,18 @@ int vm_call(vm_env* vm_p, alex_inst* a_i_p)
 		}
 		else if(ret != 1)
 		{
-			print("vm[error line: %d] reg func return is error ! ret= %d is error!", a_i_p->line, ret);
+			print("vm[error] reg func return is error ! ret= %d is error!", ret);
 			return VM_ERROR_REG_FUNC;
 		}
 	}
 	else
 	{
-		print("vm[error line: %d] the ide is not find func!\n", a_i_p->line);
+		print("vm[error] the ide is not find func!\n");
 		return VM_ERROR_NOT_IDE;
 	}
 
 	return VM_SUCCESS;
 }
-
 
 int vm_ret(vm_env* vm_p, alex_inst* a_i_p)
 {
@@ -927,7 +936,7 @@ ALEX_NUMBER pop_number(vm_env* vm_p)
 		r_value r_v = {0};
 		r_v = _pop_data(&vm_p->data_ptr);
 
-		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_num)
+		if(r_v.r_t != sym_type_error && r_v.r_t == sym_type_num)
 			ret = r_v.r_v.num;
 	}
 
@@ -953,7 +962,7 @@ ALEX_STRING pop_string(vm_env* vm_p)
 		r_value r_v = {0};
 		r_v = _pop_data(&vm_p->data_ptr);
 
-		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_string)
+		if(r_v.r_t != sym_type_error && r_v.r_t == sym_type_string)
 			ret = r_v.r_v.str;
 	}
 
@@ -979,19 +988,33 @@ alex_al* pop_al(vm_env* vm_p)
 		r_value r_v = {0};
 		r_v = _pop_data(&vm_p->data_ptr);
 		
-		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_al)
+		if(r_v.r_t != sym_type_error && r_v.r_t == sym_type_al)
 			ret = r_v.r_v.al;
 	}
 	
 	return ret;
 }
 
+r_value pop_func(vm_env* vm_p)
+{
+	r_value ret = {0};
+	if(vm_p)
+	{
+		r_value r_v = _pop_data(&vm_p->data_ptr);
+
+		if(r_v.r_t != sym_type_error && (r_v.r_t == sym_type_addr || r_v.r_t == sym_type_reg_func))
+			ret = r_v;
+	}
+
+	return ret;
+}
 
 int push_al(vm_env* vm_p, r_value al)
 {
 	if(vm_p && al.r_t==sym_type_al)
 	{
 		push_data(&vm_p->data_ptr, al);
+		return VM_SUCCESS;
 	}
 
 	return VM_ERROR;
@@ -1004,10 +1027,23 @@ void* pop_ptr(vm_env* vm_p)
 		r_value r_v = {0};
 		r_v = _pop_data(&vm_p->data_ptr);
 
-		if(r_v.r_t != sym_type_error && r_v.r_t != sym_type_pointer)
+		if(r_v.r_t != sym_type_error && r_v.r_t == sym_type_pointer)
 			return r_v.r_v.ptr;
 	}
 
 	return NULL;
 }
 
+int push_ptr(vm_env* vm_p, void* p)
+{
+	if(vm_p)
+	{
+		r_value r_v = {0};
+		r_v.r_t = sym_type_pointer;
+		r_v.r_v.ptr = p;
+
+		push_data(&vm_p->data_ptr, r_v);
+		return VM_SUCCESS;
+	}
+	return VM_ERROR;
+}

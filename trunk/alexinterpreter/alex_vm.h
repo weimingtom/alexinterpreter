@@ -132,6 +132,8 @@ ALEX_STRING pop_string(vm_env* vm_p);
 alex_al* pop_al(vm_env* vm_p);
 int push_al(vm_env* vm_p, r_value al);
 void* pop_ptr(vm_env* vm_p);
+int push_ptr(vm_env* vm_p, void* p);
+r_value pop_func(vm_env* vm_p);
 
 
 #define next_pc(v_p)		((v_p)->pc++)
@@ -151,6 +153,7 @@ int push_global(vm_env* vm_p, r_value r_v);
 r_value _pop_data(d_data* d_ptr);
 void _push_data(d_data* d_ptr, r_value r_v);
 
+int vm_p_call(vm_env* vm_p, r_value* r_v_p);
 int alex_vm(vm_env* vm_p);
 void vm_print(vm_env* vm_p);
 

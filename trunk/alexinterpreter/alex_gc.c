@@ -60,6 +60,7 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 {
 	unsigned int index =0;
 	str_node* str_p = NULL;
+	str_node* back_p = NULL;
 	gc_node* gc_p = NULL;
 	str_node* t_s_n = NULL;
 
@@ -67,16 +68,17 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 		return NULL;
 
 	index = gc_hash(str);
-
 	str_p = alex_gc.gc_str_table.str_ptr[index];
+	back_p = str_p;
 
-	while(str_p && str_p->next)
+	while(str_p)
 	{
 		if(alex_strcmp(str_p->str, str)== 0)
 		{
 			str_p->gc_p->gc_count++;
 			return str_p->gc_p;
 		}
+		back_p = str_p;
 		str_p = str_p->next;
 	}
 	
@@ -84,14 +86,15 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 	memset(t_s_n, 0, sizeof(str_node));
 	gc_p = gc_add(gc_new_g_v_str(str), gc_l);
 	t_s_n->str = gc_p->gc_value.sg_v.str;
+	t_s_n->gc_p = gc_p;
 
-	if(str_p==NULL)
+	if(back_p== NULL)
 	{	
 		alex_gc.gc_str_table.str_ptr[index] = t_s_n;
 	}
 	else
 	{
-		str_p->next = t_s_n;	
+		back_p->next = t_s_n;	
 	}
 
 	return gc_p;
