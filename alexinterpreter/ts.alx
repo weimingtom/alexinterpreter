@@ -1,8 +1,11 @@
+function func_1()
+{
+	print("func_1");
+}
+
 function main()
-{	
-	var al = [1,2, [3, 3]];
-	var al_0 = al[2];
-	al_0[1] = al;
+{
+		print(func_1);
 }
 
 
