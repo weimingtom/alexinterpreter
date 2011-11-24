@@ -34,29 +34,30 @@ ret_node* inter_al(inter_env env, tree_node* t_n);
 
 void alex_interpret(inter_env env, tree_node* main_tree)
 {
-	if(main_tree == NULL)
-		return;
-
-	switch(type_tree(main_tree))
+	for(;;)
 	{
-	case bnf_type_vardef:
+		switch(type_tree(main_tree))
 		{
-			inter_vardef(env.g_table, main_tree);		// add to global_table
+		case bnf_type_vardef:
+			{
+				inter_vardef(env.g_table, main_tree);		// add to global_table
+			}
+			break;
+		case bnf_type_funccall:
+			{
+				inter_funccall(env, main_tree);
+			}
+			break;
+		default:
+			{
+				print("inter[error line %d]: the g_code not allow!\n", main_tree->line);
+			}
+			return;
 		}
-		break;
-	case bnf_type_funccall:
-		{
-			inter_funccall(env, main_tree);
-		}
-		break;
-	default:
-		{
-			print("inter[error line %d]: the g_code not allow!\n", main_tree->line);
-		}
-		return;
+		main_tree = main_tree->next;
 	}
 
-	alex_interpret(env, main_tree->next);
+//	alex_interpret(env, main_tree->next);
 }
 
 

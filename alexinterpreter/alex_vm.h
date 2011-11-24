@@ -128,7 +128,9 @@ typedef struct _vm_env
 //#define push_data 	_push_data
 
 ALEX_NUMBER pop_number(vm_env* vm_p);
+int push_number(vm_env* vm_p, ALEX_NUMBER num);
 ALEX_STRING pop_string(vm_env* vm_p);
+int push_string(vm_env* vm_p, char* str);
 alex_al* pop_al(vm_env* vm_p);
 int push_al(vm_env* vm_p, r_value al);
 void* pop_ptr(vm_env* vm_p);
