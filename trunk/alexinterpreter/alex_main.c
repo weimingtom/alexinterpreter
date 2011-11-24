@@ -54,8 +54,9 @@ void alex_free()
 int main(int arg, char* arg_list[])
 {
 	alex_init();
-	alex_run(arg_list[1]);
-/*	print("please any key to be continue!\n");
-	getchar();
-*/	return 0;
+//	alex_run(arg_list[1]);
+	alex_run("F:\\code\\alex\\ts.alx");
+//	print("please any key to be continue!\n");
+//	getchar();
+	return 0;
 }

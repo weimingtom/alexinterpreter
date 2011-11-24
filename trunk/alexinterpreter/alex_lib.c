@@ -8,8 +8,6 @@
 #include "alex_gc.h"
 #include <time.h>
 
-
-
 void reg_lib(sym_table* g_t, char* str, ALEX_FUNC a_f)
 {
 	st t_st = {0};
@@ -18,6 +16,11 @@ void reg_lib(sym_table* g_t, char* str, ALEX_FUNC a_f)
 	t_st.s_t = sym_type_reg_func;
 	t_st.s_v.func = a_f;
 	add_table(g_t, t_st);
+}
+
+void reg_dll(char* str, ALEX_FUNC a_f)
+{
+	reg_lib(global_table, str, a_f);
 }
 
 void print_value(r_value  val)
@@ -116,10 +119,46 @@ int alex_rand(vm_env* vm_p)
 	return 1;
 }
 
+typedef void (*FUNC_DELL_REG)();
+typedef void (*FUNC_INIT_REG)(
+				   void* pop_number_p,
+				   void* push_number_p,
+				   
+				   void* pop_string_p,
+				   void* push_string_p,
+				   
+				   void* pop_al_p,
+				   void* push_al_p,
+				   
+				   void* pop_ptr_p,
+				   void* push_ptr_p,
+				   
+				   void* pop_func_p,
+				   void* reg_func_p
+				   );
+
+void alex_reg_dll()
+{
+	FUNC_INIT_REG init_reg = NULL;
+	FUNC_DELL_REG dll_reg = NULL;
+	HINSTANCE hinstance=LoadLibrary("F:\\code\\alex\\a_lib\\a_util\\Debug\\a_util.dll");
+	
+	if(hinstance)
+	{
+		init_reg = (FUNC_INIT_REG)GetProcAddress(hinstance,"alex_init_reg");
+		if(init_reg)
+		{
+			init_reg(pop_number, push_number, pop_string, push_string, pop_al, push_al, pop_ptr, push_ptr, pop_func, reg_func);
+		}
+		dll_reg = (FUNC_DELL_REG)GetProcAddress(hinstance, "alex_dll_reg");
+		dll_reg();
+	}
+}
 
 void alex_reg_lib(sym_table* g_t)
 {
 	srand((unsigned)time(0));
+	alex_reg_dll();
 	reg_lib(g_t, "print", alex_print);
 	reg_lib(g_t, "create_window", alex_create_window);
 	reg_lib(g_t, "message_box", alex_message_box);

@@ -35,8 +35,8 @@ function sort(var al)
 		j=i;
 		while(j<al_len )
 		{
-			if(al[max_index]>al[j])
-				max_index = j;
+	#		if(al[max_index]>al[j])
+	#			max_index = j;
 				
 			j++;
 		}

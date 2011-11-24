@@ -2,7 +2,6 @@
 #define _ALEX_CONF_H_
 #include <stdio.h>
 #include "alex_symbol_table.h"
-#include "stdio.h"
 #include "alex_string.h"
 
 // º”‘ÿcodeª∫¥Ê
