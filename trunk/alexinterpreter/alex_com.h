@@ -22,7 +22,8 @@ typedef enum _e_e{
 	COM_ERROR_BREAK,
 	COM_ERROR_CONTINUE,
 	COM_ERROR_NOT_AL_INX,
-	COM_ERROR_OTHER
+	COM_ERROR_OTHER,
+	COM_ERROR_USING
 }e_e;
 
 typedef enum _e_reg_{

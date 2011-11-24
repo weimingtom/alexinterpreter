@@ -16,6 +16,7 @@ void  alex_init()
 
 	global_table = new_table();
 	com_env_p = new_com_env();	
+	alex_ani_init();
 	alex_reg_lib(global_table);
 }
 
@@ -55,7 +56,7 @@ int main(int arg, char* arg_list[])
 {
 	alex_init();
 //	alex_run(arg_list[1]);
-	alex_run("F:\\code\\alex\\ts.alx");
+	alex_run("C:\\code\\alex-vm-s\\ts.alx");
 //	print("please any key to be continue!\n");
 //	getchar();
 	return 0;

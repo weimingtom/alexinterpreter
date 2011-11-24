@@ -78,9 +78,7 @@ tree_node* alex_parsing(token_list* t_lt)
 			{
 				r_tn = syn_var_def(t_lt);
 				if(r_tn)
-				{
 					add_main(r_tn);
-				}
 				else
 					return NULL;
 			}
@@ -88,6 +86,15 @@ tree_node* alex_parsing(token_list* t_lt)
 		case token_type_ide:
 			{
 				r_tn = syn_exp_stmt(t_lt);
+				if(r_tn)
+					add_main(r_tn);
+				else
+					return NULL;
+			}
+			break;
+		case token_type_using:		// 引入dll
+			{
+				r_tn = sym_using(t_lt);
 				if(r_tn)
 					add_main(r_tn);
 				else
@@ -153,6 +160,25 @@ int syn_watch(token_list* t_lt,  enum _token_type t_t)
 	}
 }
 
+
+tree_node* sym_using(token_list* t_lt)
+{
+	tree_node* rt_n = NULL;
+	
+	if(syn_watch(t_lt, token_type_using))
+	{
+		if(type_token(t_lt)==token_type_string)
+		{
+			token* tk = at_token(t_lt);
+			rt_n = new_tree_node(get_line(t_lt), bnf_type_using);
+			rt_n->b_v.str = alex_string(tk->token_value.str.s_ptr);
+			
+			syn_watch(t_lt, token_type_string);
+		}
+	}
+
+	return rt_n;
+}
 
 
 // 定义变量

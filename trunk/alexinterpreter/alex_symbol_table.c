@@ -29,6 +29,7 @@ void alex_init_symbol_table()
 		"true",
 		"return",
 		"false",
+		"using",				// ÒıÈëdll¿âº¯Êı
 
 		"+",					
 		"-",
