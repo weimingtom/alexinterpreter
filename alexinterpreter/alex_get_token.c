@@ -25,7 +25,7 @@ char *_token_type_str[]={
 	"token_type_true",
 	"token_type_return",
 	"token_type_false",
-	
+	"token_type_using",
 	
 	"token_type_add",			// ÔËËã·ûÀàĞÍ
 	"token_type_sub",

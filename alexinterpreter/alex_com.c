@@ -2,6 +2,7 @@
 #include "alex_vm.h"
 #include "alex_log.h"
 #include "alex_gc.h"
+#include "alex_lib.h"
 
 #include <stdlib.h>
 
@@ -124,6 +125,11 @@ int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
 	{
 		switch(type_tree(main_tree))
 		{
+		case bnf_type_using:
+			{
+				check_com(alex_reg_dll(main_tree->b_v.str.s_ptr));
+			}
+			break;
 		case bnf_type_vardef:
 			{
 				check_com(com_g_vardef(com_p, main_tree));

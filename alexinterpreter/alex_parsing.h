@@ -20,6 +20,7 @@ typedef enum _bnf_type{
 	bnf_type_exp,		// ±Ì¥Ô Ω
 	bnf_type_seg,		// ∂Œ
 	bnf_type_return,	// return
+	bnf_type_using,
 	bnf_type_break,
 	bnf_type_continue,
 	bnf_type_if,
@@ -104,5 +105,6 @@ tree_node* syn_continue_def(token_list* t_lt);
 tree_node* syn_break_def(token_list* t_lt);
 tree_node* syn_al_def(token_list* t_lt);
 tree_node* syn_at_al(token_list* t_lt);
+tree_node* sym_using(token_list* t_lt);
 
 #endif
