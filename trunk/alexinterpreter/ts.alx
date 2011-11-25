@@ -1,10 +1,8 @@
 using "a_util.dll" 
 
-
 function main()
 {
 	print_a(123);
-
 }
 
 

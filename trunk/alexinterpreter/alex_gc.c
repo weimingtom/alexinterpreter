@@ -32,7 +32,7 @@ int gc_del_str(char* str)
 			str_b->next = str_p->next;
 			if(str_b==str_p)
 				alex_gc.gc_str_table.str_ptr[index] = str_p->next;
-			free(str_p);
+			a_free(str_p);
 			return 1;
 		}
 
@@ -91,13 +91,9 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 	t_s_n->gc_p = gc_p;
 
 	if(back_p== NULL)
-	{	
 		alex_gc.gc_str_table.str_ptr[index] = t_s_n;
-	}
 	else
-	{
 		back_p->next = t_s_n;	
-	}
 
 	return gc_p;
 }

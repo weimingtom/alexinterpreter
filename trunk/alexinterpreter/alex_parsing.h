@@ -105,6 +105,6 @@ tree_node* syn_continue_def(token_list* t_lt);
 tree_node* syn_break_def(token_list* t_lt);
 tree_node* syn_al_def(token_list* t_lt);
 tree_node* syn_at_al(token_list* t_lt);
-tree_node* sym_using(token_list* t_lt);
+tree_node* syn_using(token_list* t_lt);
 
 #endif

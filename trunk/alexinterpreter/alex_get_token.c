@@ -264,7 +264,6 @@ CHECK_IDE:
 			if(s_n)
 			{
 				new_token.token_type = s_n->symbol_type;
-//				new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 			}
 			else
 			{
@@ -386,7 +385,6 @@ token get_al_token(code_buff* c_bf)
 		new_token.token_type = token_type_lal;
 	else if(at_char(*c_bf) == ']')
 		new_token.token_type = token_type_ral;
-//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 	
 	new_token.token_line = c_bf->line;
@@ -404,7 +402,6 @@ token get_seg_token(code_buff* c_bf)
 		new_token.token_type = token_type_lseg;
 	else if(at_char(*c_bf) == '}')
 		new_token.token_type = token_type_rseg;
-//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 
 	new_token.token_line = c_bf->line;
@@ -418,7 +415,6 @@ token  get_end_token(code_buff* c_bf)
 	
 	cat_char(&new_token.token_name, at_char(*c_bf));
 	new_token.token_type = token_type_end;
-//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 
 	new_token.token_line = c_bf->line;
