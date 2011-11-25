@@ -2,11 +2,10 @@
 #include "alex_sym.h"
 #include "alex_lib.h"
 #include "alex_arrylist.h"
-#include "alex_interpret.h"
-#include "alex_window.h"
 #include "alex_vm.h"
 #include "alex_gc.h"
 #include <time.h>
+#include <stdlib.h>
 
 void reg_lib(sym_table* g_t, char* str, ALEX_FUNC a_f)
 {
@@ -69,18 +68,6 @@ int alex_print(vm_env* vm_p)
 	return 0;
 }
 
-
-
-
-// sleepº¯Êý
-int alex_sleep(vm_env* vm_p)
-{
-	int w_t = (int)pop_number(vm_p);
-	Sleep((DWORD)w_t);
-
-	return 0;
-}
-
 int alex_len(vm_env* vm_p)
 {
 	r_value al = pop_data(&vm_p->data_ptr);
@@ -124,14 +111,7 @@ void alex_reg_lib(sym_table* g_t)
 {
 	srand((unsigned)time(0));
 	reg_lib(g_t, "print", alex_print);
-	reg_lib(g_t, "create_window", alex_create_window);
-	reg_lib(g_t, "message_box", alex_message_box);
-	reg_lib(g_t, "sleep", alex_sleep);
-	reg_lib(g_t, "add", alex_add);;
-	reg_lib(g_t, "get_key", alex_get_key);
-	reg_lib(g_t, "rectangle", alex_rectangle);
+	reg_lib(g_t, "add", alex_add);
 	reg_lib(g_t, "rand", alex_rand);
 	reg_lib(g_t, "len", alex_len);
-	reg_lib(g_t, "t_time", alex_t_time);
-	reg_lib(g_t, "clear", alex_clear);
 }	

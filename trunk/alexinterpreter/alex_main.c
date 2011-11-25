@@ -56,7 +56,7 @@ int main(int arg, char* arg_list[])
 {
 	alex_init();
 //	alex_run(arg_list[1]);
-	alex_run("C:\\code\\alex-vm-s\\ts.alx");
+	alex_run("F:\\code\\alex\\snake.alx");
 //	print("please any key to be continue!\n");
 //	getchar();
 	return 0;

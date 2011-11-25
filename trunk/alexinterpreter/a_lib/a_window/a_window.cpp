@@ -1,26 +1,41 @@
-#include "alex_window.h"
-#include "alex_lib.h"
-#include "alex_interpret.h"
-#include "alex_sym.h"
+// a_window.cpp : Defines the entry point for the DLL application.
+//
+
+#include "stdafx.h"
+#include "alex_ani.h"
+#include <tchar.h>
+#include <stdlib.h>
 
 typedef  struct _w_handle{
 	HDC hdc;
 	HWND w_m;
 	int key;
 }w_handle;
-
 #define MAX_WINDOW_LEN 24
-w_handle handle_list[MAX_WINDOW_LEN] = {0};
-HDC hdc;
-HWND hd;
-DWORD WINAPI ms_tt(LPVOID lp);
+static w_handle handle_list[MAX_WINDOW_LEN] = {0};
 
+BOOL APIENTRY DllMain( HANDLE hModule, 
+                       DWORD  ul_reason_for_call, 
+                       LPVOID lpReserved
+					 )
+{
+    return TRUE;
+}
+
+// sleep函数
+int alex_sleep(void* vm_p)
+{
+	int w_t = (int)ani_pop_number(vm_p);
+	Sleep((DWORD)w_t);
+	
+	return 0;
+}
 
 // 显示消息函数
-int alex_message_box(vm_env* vm_p)
+int alex_message_box(void* vm_p)
 {
-	a_string t = pop_string(vm_p);
-	a_string n = pop_string(vm_p);
+	a_string t = ani_pop_string(vm_p);
+	a_string n = ani_pop_string(vm_p);
 	
 	MessageBox(	NULL,
 		t.s_ptr,
@@ -32,10 +47,9 @@ int alex_message_box(vm_env* vm_p)
 
 
 // 获得系统启动 当前的毫秒数
-int alex_t_time(vm_env* vm_p)
+int alex_t_time(void* vm_p)
 {
-	push_data(&vm_p->data_ptr, new_number((ALEX_NUMBER)(GetTickCount())));
-
+	ani_push_number(vm_p, (ALEX_NUMBER)(GetTickCount()));
 	return 1;
 }
 
@@ -48,7 +62,6 @@ int search_handle(HWND hWnd)
 		if(handle_list[i].w_m == hWnd)
 			return i;
 	}
-
 	return -1;
 }
 
@@ -83,13 +96,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 // 绘制矩形
-int alex_rectangle(vm_env* vm_p)
+int alex_rectangle(void* vm_p)
 {
-	int h = (int)pop_number(vm_p);
-	int w = (int)pop_number(vm_p);
-	int y = (int)pop_number(vm_p);
-	int x = (int)pop_number(vm_p);
-	int handle = (int)pop_number(vm_p);
+	int h = (int)ani_pop_number(vm_p);
+	int w = (int)ani_pop_number(vm_p);
+	int y = (int)ani_pop_number(vm_p);
+	int x = (int)ani_pop_number(vm_p);
+	int handle = (int)ani_pop_number(vm_p);
 
 //	ms_tt(NULL);
 	Rectangle(handle_list[handle].hdc, x, y, w, h);
@@ -100,24 +113,24 @@ int alex_rectangle(vm_env* vm_p)
 	return 0;
 }
 
-int alex_get_key(vm_env* vm_p)
+int alex_get_key(void* vm_p)
 {
 	int ret = 0;
-	int handle = (int)pop_number(vm_p);
+	int handle = (int)ani_pop_number(vm_p);
 	if(handle_list[handle].key)
 	{
 		ret = handle_list[handle].key;
 		handle_list[handle].key = 0;
 	}
 
-	push_number(vm_p, (ALEX_NUMBER)ret);
+	ani_push_number(vm_p, (ALEX_NUMBER)ret);
 	return 1;
 }
 
 
 DWORD WINAPI create_window_p(LPVOID lp)
 {
-	byte* w_lp = lp;
+	byte* w_lp = (byte*)lp;
 	MSG msg;
 	a_string name={0};
 	int x, y, w, h, handle;
@@ -139,8 +152,8 @@ DWORD WINAPI create_window_p(LPVOID lp)
 	w_lp+=sizeof(int);
 	handle = *((int*)w_lp);
 
-	szTitle       = _TEXT(name.s_ptr);     // 标题栏文本
-	szWindowClass = _TEXT(name.s_ptr);     // 主窗口类名
+	szTitle       = (TCHAR*)_TEXT(name.s_ptr);     // 标题栏文本
+	szWindowClass = (TCHAR*)_TEXT(name.s_ptr);     // 主窗口类名
     wcex.cbSize = sizeof(WNDCLASSEX);
 	
 	wcex.style           = CS_HREDRAW | CS_VREDRAW;
@@ -164,7 +177,7 @@ DWORD WINAPI create_window_p(LPVOID lp)
 
 	handle_list[handle].hdc = GetWindowDC(handle_list[handle].w_m);
 
-	free(lp);
+	free((void*)lp);
 	// 主消息循环:
 	while (GetMessage(&msg, NULL, 0, 0)) 
 	{
@@ -175,9 +188,9 @@ DWORD WINAPI create_window_p(LPVOID lp)
 	return 0;
 }
 
-int alex_clear(vm_env* vm_p)
+int alex_clear(void* vm_p)
 {
-	int handle = (int)pop_number(vm_p);
+	int handle = (int)ani_pop_number(vm_p);
 	if(handle>=0)
 	{
 		InvalidateRect(handle_list[handle].w_m, NULL, TRUE);
@@ -187,7 +200,7 @@ int alex_clear(vm_env* vm_p)
 }
 
 // 创建窗口函数
-int alex_create_window(vm_env* vm_p)
+int alex_create_window(void* vm_p)
 {
 	int i=0;
 	int handle = -1;
@@ -195,11 +208,11 @@ int alex_create_window(vm_env* vm_p)
 	byte* m_p_p = NULL;
 	int len=0;
 	DWORD tp;
-	int h = (int)pop_number(vm_p);
-	int w = (int)pop_number(vm_p);
-	int y = (int)pop_number(vm_p);
-	int x = (int)pop_number(vm_p);
-	a_string name = pop_string(vm_p);
+	int h = (int)ani_pop_number(vm_p);
+	int w = (int)ani_pop_number(vm_p);
+	int y = (int)ani_pop_number(vm_p);
+	int x = (int)ani_pop_number(vm_p);
+	a_string name = ani_pop_string(vm_p);
 	
 	
 	for(i=0; i<MAX_WINDOW_LEN; i++)
@@ -212,7 +225,7 @@ int alex_create_window(vm_env* vm_p)
 	}
 
 	len = sizeof(a_string)+sizeof(int)*5;
-	m_p = (byte*)malloc(len);
+	m_p = (byte*)malloc((size_t)len);
 	m_p_p = m_p;
 	*((a_string*)m_p_p) = name;
 	m_p_p += sizeof(a_string);
@@ -233,9 +246,20 @@ int alex_create_window(vm_env* vm_p)
 			break;
 	}
 	
-	
-	push_number(vm_p, (ALEX_NUMBER)handle);
+	ani_push_number(vm_p, (ALEX_NUMBER)handle);
 	return 1;
 }
 
 
+// dll 注册alex函数接口
+extern "C" _declspec(dllexport)
+void alex_dll_reg()
+{
+	ani_reg_func("sleep", alex_sleep);
+	ani_reg_func("clear", alex_clear);
+	ani_reg_func("create_window", alex_create_window);
+	ani_reg_func("message_box", alex_message_box);
+	ani_reg_func("rectangle", alex_rectangle);
+	ani_reg_func("t_time", alex_t_time);
+	ani_reg_func("get_key", alex_get_key);
+}
