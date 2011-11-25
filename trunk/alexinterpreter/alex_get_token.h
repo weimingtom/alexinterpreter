@@ -112,6 +112,7 @@ token get_oper_token(code_buff* c_bf);
 token get_seg_token(code_buff* c_bf);
 token get_al_token(code_buff* c_bf);
 token  get_end_token(code_buff* c_bf);
+void free_token_list(token_list* t_lp);
 void print_token();
 
 #define alex_load_file(f)	alex_read_source_code(f)

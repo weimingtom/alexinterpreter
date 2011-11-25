@@ -27,7 +27,6 @@ typedef  struct _alex_al{
 	struct _r_value* al_v;
 	int al_size;
 	int al_len;
-	int count;			//  “˝”√count÷µ
 }alex_al;
 
 
@@ -80,9 +79,7 @@ st* add_g_table(st  a_st);
 void print_table(sym_table* s_t);
 
 void free_st(st* st_p);
-st new_func_st(char* name,  ALEX_FUNC  tn_p);
-st new_num_st(char* name, ALEX_NUMBER tn_v);
-st new_str_st(char* name, ALEX_STRING tn_s);
+st new_func_st(char* name);
 
 r_value new_number(ALEX_NUMBER num);
 r_value new_addr(int addr);

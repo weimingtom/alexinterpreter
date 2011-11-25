@@ -1,0 +1,8 @@
+
+function main()
+{
+	var a = "123";
+}
+
+
+main();

@@ -4,6 +4,8 @@
 #include "alex_symbol_table.h"
 #include "alex_string.h"
 
+extern int mem_count;
+
 // 加载code缓存
 typedef struct _code_buff{
 	char* code_ptr;				// 加载文件缓存起始地址
@@ -33,5 +35,7 @@ typedef unsigned char ubyte;
 long fsize( FILE *fp);			// 获得当前文件大小
 code_buff get_code_buff(long  code_size);
 void free_code_buff();
+void a_free(void* p);
+void* a_malloc(size_t s_t);
 
 #endif

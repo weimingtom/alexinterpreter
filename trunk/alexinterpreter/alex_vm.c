@@ -64,26 +64,6 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 											)	\
 										) 
 
-/*
-
-// ³õÊ¼»¯ÐéÄâ»ú
-vm_env* init_vm_env()
-{
-	free_vm_evn(&alex_vm);
-
-	// fill code segment
-	relloc_code(&alex_vm.code_ptr);
-	relloc_stack(&alex_vm.data_ptr);
-	relloc_local(&alex_vm.local_ptr);
-	relloc_global(&alex_vm.global_ptr);
-	relloc_call(&alex_vm.call_ptr);
-
-	alex_vm.local_top =0;
-	alex_vm.pc=0;
-	
-	return &alex_vm;
-}
-*/
 
 // vm cpu
 int alex_vm(vm_env* vm_p)
@@ -758,16 +738,19 @@ void free_vm_evn(vm_env* vm_p)
 		return;
 
 	if(vm_p->code_ptr.root_ptr)
-		free(vm_p->code_ptr.root_ptr);
+		a_free(vm_p->code_ptr.root_ptr);
 
 	if(vm_p->data_ptr.root_ptr)
-		free(vm_p->data_ptr.root_ptr);
+		a_free(vm_p->data_ptr.root_ptr);
 
 	if(vm_p->local_ptr.root_ptr)
-		free(vm_p->local_ptr.root_ptr);
+		a_free(vm_p->local_ptr.root_ptr);
+
+	if(vm_p->call_ptr.root_ptr)
+		a_free(vm_p->call_ptr.root_ptr);
 
 	if(vm_p->global_ptr.root_ptr)
-		free(vm_p->global_ptr.root_ptr);
+		a_free(vm_p->global_ptr.root_ptr);
 
 	memset(vm_p, 0, sizeof(vm_env));
 }
@@ -780,10 +763,10 @@ c_inst* relloc_code(c_inst* c_i)
 	if(c_i->inst_len>=c_i->inst_size)
 	{
 		int n_len = (c_i->inst_size+CODE_MEM_LEN)*sizeof(alex_inst);
-		alex_inst* n_a_i = (alex_inst*)malloc(n_len);
+		alex_inst* n_a_i = (alex_inst*)a_malloc(n_len);
 		memset(n_a_i, 0, n_len);
 		memcpy(n_a_i, c_i->root_ptr, c_i->inst_size*sizeof(alex_inst));
-		free(c_i->root_ptr);
+		a_free(c_i->root_ptr);
 		c_i->root_ptr = n_a_i;
 		c_i->inst_size += CODE_MEM_LEN;
 	}
@@ -798,10 +781,10 @@ d_data* relloc_data(d_data* d_d, int d_len)
 	if(d_d->data_len>=d_d->data_size)
 	{
 		int n_len = (d_d->data_size+d_len)*sizeof(r_value);
-		r_value* n_a_i = (r_value*)malloc(n_len);
+		r_value* n_a_i = (r_value*)a_malloc(n_len);
 		memset(n_a_i, 0, n_len);
 		memcpy(n_a_i, d_d->root_ptr, d_d->data_size*sizeof(r_value));
-		free(d_d->root_ptr);
+		a_free(d_d->root_ptr);
 		d_d->root_ptr = n_a_i;
 		d_d->data_size += d_len;
 	}

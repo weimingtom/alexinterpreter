@@ -97,7 +97,7 @@ void clear_local_addr(com_env* com_p);
 
 com_env* new_com_env()
 {
-	com_env* ret_c_e_p = (com_env*)malloc(sizeof(com_env));
+	com_env* ret_c_e_p = (com_env*)a_malloc(sizeof(com_env));
 	memset(ret_c_e_p, 0, sizeof(com_env));
 
 	relloc_code(&(ret_c_e_p->com_inst));
@@ -112,6 +112,25 @@ com_env* new_com_env()
 	relloc_s_addr(&ret_c_e_p->var_table.addr_ptr, TEMP_MEM_LEN);
 	return ret_c_e_p;
 } 
+
+void free_com_env()
+{
+	if(com_env_p==NULL)
+		return;
+	
+	free_table(com_env_p->var_table.l_table);
+	if(com_env_p->var_table.addr_ptr.root_ptr)
+	{
+		int i=0;
+		for(i=0; i<com_env_p->var_table.addr_ptr.addr_len; i++)
+			free_s_addr(com_env_p->var_table.addr_ptr.root_ptr+i);
+		a_free(com_env_p->var_table.addr_ptr.root_ptr);
+	}
+
+	a_free(com_env_p);
+	com_env_p = NULL;
+}
+
 
 // 编译code入口 main_tree为执行调用代码 func_tree为函数链表
 int alex_com(com_env* com_p, tree_node* main_tree, tree_node* func_tree)
@@ -1056,10 +1075,10 @@ addr_data* relloc_s_addr(addr_data* a_d, int a_len)
 	if(a_d->addr_len>=a_d->addr_size)
 	{
 		int n_len = (a_d->addr_size+a_len)*sizeof(s_addr);
-		s_addr* n_a_i = (s_addr*)malloc(n_len);
+		s_addr* n_a_i = (s_addr*)a_malloc(n_len);
 		memset(n_a_i, 0, n_len);
 		memcpy(n_a_i, a_d->root_ptr, a_d->addr_size*sizeof(s_addr));
-		free(a_d->root_ptr);
+		a_free(a_d->root_ptr);
 		a_d->root_ptr = n_a_i;
 		a_d->addr_size += a_len;
 	}
@@ -1122,7 +1141,7 @@ void free_s_addr(s_addr* s_p)
 	while(b_p)
 	{
 		b_addr_node* n_b_p= b_p->next;
-		free(b_p);
+		a_free(b_p);
 		b_p = n_b_p;
 	}
 	
@@ -1134,7 +1153,7 @@ void add_back_addr(s_addr* s_a, int b_addr)
 	if(s_a==NULL)
 		return;
 	
-	new_node = (b_addr_node*)malloc(sizeof(b_addr_node));
+	new_node = (b_addr_node*)a_malloc(sizeof(b_addr_node));
 	memset(new_node, 0, sizeof(b_addr_node));
 	new_node->back_addr = b_addr;
 	

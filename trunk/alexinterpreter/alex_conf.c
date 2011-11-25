@@ -1,9 +1,12 @@
 #include "alex_conf.h"
-#include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "stdlib.h"
 
 code_buff c_b = {0};
+int mem_count = 0;
+
+
 
 // 获取文件字节大小
 long fsize( FILE *fp)
@@ -35,10 +38,10 @@ code_buff get_code_buff(long  code_size)
 	else
 	{
 		if(c_b.code_ptr != NULL)
-			free(c_b.code_ptr);
+			a_free(c_b.code_ptr);
 
 		c_b.code_size = code_size+2;
-		c_b.code_ptr = (char*)malloc(c_b.code_size);
+		c_b.code_ptr = (char*)a_malloc(c_b.code_size);
 		memset(c_b.code_ptr, 0, c_b.code_size);
 		c_b.read_code_ptr = c_b.code_ptr;
 	}
@@ -51,9 +54,18 @@ code_buff get_code_buff(long  code_size)
 void free_code_buff()
 {
 	if(c_b.code_ptr != NULL)
-		free(c_b.code_ptr);
+		a_free(c_b.code_ptr);
 	
 	memset(&c_b, 0, sizeof(c_b));
 }
 
 
+void a_free(void* p)
+{
+	(p)?(mem_count--, free(p)):(0);
+}
+
+void* a_malloc(size_t s_t)
+{
+	return (s_t)?(mem_count++, malloc(s_t)):(NULL);
+}

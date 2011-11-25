@@ -73,6 +73,7 @@ unsigned int BKDRHash(char *str);					// HASH函数生成因子
 int   alex_add_hash(sym_node* add_sym);				// 添加符号表函数接口(初始化使用)
 sym_node* alex_search_sym(char* search_info);			// 查找符号表函数接口
 void init_ascii_table();
+void free_symbol_table();
 
 
 

@@ -67,5 +67,6 @@ r_value gc_new_string(char* str, e_gc_level gc_l);
 
 r_value gc_new_al(int count);
 int _gc_back_();
+void free_gc();
 
 #endif

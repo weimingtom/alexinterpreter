@@ -60,7 +60,7 @@ void alex_init_symbol_table()
 
 	for(i=0; i<(sizeof(symbol_list)/sizeof(char*)); i++)
 	{
-		tmp = (sym_node *)malloc(sizeof(sym_node));
+		tmp = (sym_node *)a_malloc(sizeof(sym_node));
 		tmp->next=NULL;
 
 		strcpy(tmp->symbol_info, symbol_list[i]);
@@ -139,6 +139,23 @@ unsigned int BKDRHash(char *str)
 	return _BKDRHash(str, SYMBOL_HASH_TABLE_LEN);
 }
 
+void free_symbol_table()
+{
+	sym_node* now_s = NULL;
+	int i=0;
+	for(i=0; i<SYMBOL_HASH_TABLE_LEN; i++)
+	{
+		now_s =  symbol_table[i];
+		while(now_s)
+		{
+			sym_node* next_s = now_s->next;
+			a_free(now_s);
+			now_s = next_s;
+		}
+
+		symbol_table[i] = NULL;
+	}
+}
 
 int  alex_add_hash(sym_node* add_sym)
 {
