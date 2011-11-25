@@ -43,17 +43,19 @@ int gc_del_str(char* str)
 	return 0;
 }
 
-int gc_del_al(alex_al* al_p)
+int gc_del_al(alex_al* al_p, ubyte is_free)
 {
 	int i=0;
 	if(al_p==NULL)
 		return 0;
 	
-	for(i=0; i<al_p->al_len; i++)
-		check_l_gc(&(al_p->al_v[i]));
-	
-	free(al_p->al_v);
-	free(al_p);
+	if(is_free==0)
+	{
+		for(i=0; i<al_p->al_len; i++)
+			check_l_gc(&(al_p->al_v[i]));
+	}
+	a_free(al_p->al_v);
+	a_free(al_p);
 	
 	return 1;
 }
@@ -82,7 +84,7 @@ gc_node*  gc_add_str_table(char* str, e_gc_level gc_l)
 		str_p = str_p->next;
 	}
 	
-	t_s_n = (str_node*)malloc(sizeof(str_node));
+	t_s_n = (str_node*)a_malloc(sizeof(str_node));
 	memset(t_s_n, 0, sizeof(str_node));
 	gc_p = gc_add(gc_new_g_v_str(str), gc_l);
 	t_s_n->str = gc_p->gc_value.sg_v.str;
@@ -122,7 +124,7 @@ g_value gc_new_g_v_str(char* str)
 
 gc_node* gc_add(g_value g_v, e_gc_level gc_l)
 {
-	gc_node* t_gc_node = (gc_node*)malloc(sizeof(gc_node));
+	gc_node* t_gc_node = (gc_node*)a_malloc(sizeof(gc_node));
 	memset(t_gc_node, 0, sizeof(gc_node));
 	
 	t_gc_node->gc_value = g_v;
@@ -183,6 +185,32 @@ void gc_print()
 	print("\n------gc print end----\n");
 }
 
+void free_gc()
+{
+	gc_node* gc_p= alex_gc.gc_head;
+	gc_node* gc_b = gc_p;
+
+	while(gc_p)
+	{
+		gc_b = gc_p->next;
+		switch(gc_p->gc_value.sg_t)
+		{
+		case sym_type_string:
+			gc_del_str(gc_p->gc_value.sg_v.str.s_ptr);
+			free_string(&gc_p->gc_value.sg_v.str);
+			a_free(gc_p);
+			break;
+		case sym_type_al:
+			gc_del_al(gc_p->gc_value.sg_v.al, 1);
+			a_free(gc_p);
+			break;
+		}
+		gc_p = gc_b;
+	}
+	
+	memset(&alex_gc, 0, sizeof(alex_gc));
+}
+
 int _gc_back_()
 {
 	gc_node* gc_p= alex_gc.gc_head;
@@ -207,7 +235,7 @@ int _gc_back_()
 
 				gc_del_str(gc_p->gc_value.sg_v.str.s_ptr);
 				free_string(&gc_p->gc_value.sg_v.str);
-				free(gc_p);
+				a_free(gc_p);
 				if(gc_p==alex_gc.gc_head)
 					alex_gc.gc_head = now_n;
 				gc_p = now_n;
@@ -218,8 +246,8 @@ int _gc_back_()
 				gc_node* now_n = gc_p->next;
 				gc_b->next = now_n;
 				
-				gc_del_al(gc_p->gc_value.sg_v.al);
-				free(gc_p);
+				gc_del_al(gc_p->gc_value.sg_v.al, 0);
+				a_free(gc_p);
 				if(gc_p==alex_gc.gc_head)
 					alex_gc.gc_head = now_n;
 				gc_p = now_n;

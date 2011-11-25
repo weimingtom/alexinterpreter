@@ -1,6 +1,7 @@
 #include "alex_string.h"
 #include "string.h"
 #include "stdlib.h"
+#include "alex_conf.h"
 
 /*
 	ALEX ×Ö·û´®´¦Àí
@@ -62,10 +63,10 @@ a_string* relloc_string(a_string* a_s, int a_size)
 		char* new_ptr = NULL;
 
 		a_s->s_size += 64*(1+ (a_size- a_s->s_size +a_s->s_len+1)/64 );
-		new_ptr = (char*)malloc(a_s->s_size);
+		new_ptr = (char*)a_malloc(a_s->s_size);
 		memset(new_ptr, 0, a_s->s_size);
 		strncpy(new_ptr, a_s->s_ptr, a_s->s_len); 
-		free(a_s->s_ptr);
+		a_free(a_s->s_ptr);
 		a_s->s_ptr = new_ptr;
 	}
 
@@ -105,7 +106,7 @@ void free_string(a_string* a_s)
 		return;
 	
 	if(a_s->s_ptr)
-		free(a_s->s_ptr);
+		a_free(a_s->s_ptr);
 
 	memset(a_s, 0, sizeof(a_string));
 }

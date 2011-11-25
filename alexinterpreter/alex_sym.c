@@ -16,7 +16,7 @@ sym_table* global_table = NULL;		// only one global table
 
 sym_table* new_table()
 {
-	sym_table* r_st = (sym_table*)malloc(sizeof(sym_table));
+	sym_table* r_st = (sym_table*)a_malloc(sizeof(sym_table));
 	memset(r_st, 0, sizeof(sym_table));
 
 	return r_st;
@@ -47,7 +47,6 @@ st* add_table(sym_table* s_t, st st_v)
 	{
 		if(alex_strcmp(st_p->st_v.name, st_v.name.s_ptr) == 0)
 		{
-			free_st(&st_p->st_v); 
 			st_p->st_v = st_v;
 			return &st_p->st_v;
 		}
@@ -57,16 +56,9 @@ st* add_table(sym_table* s_t, st st_v)
 		st_p = st_p->next;
 	}
 
-	if(st_p == NULL)
-		st_w = &(s_t->st_l[inx]);
-	else
-		st_w = &(st_p->next);
-
-	*st_w = (st_node*)malloc(sizeof(st_node));
+	st_w = (st_p)?(&(st_p->next)):(&(s_t->st_l[inx]));
+	*st_w = (st_node*)a_malloc(sizeof(st_node));
 	memset(*st_w, 0, sizeof(st_node));
-	
-	if(st_v.s_t == sym_type_al)
-		st_v.s_v.al->count++;
 
 	//  进行编译地址赋值
 	if (s_t==global_table)
@@ -132,10 +124,12 @@ void free_table(sym_table* s_t)
 		{
 			st_node* t_st_p = st_p->next;
 			free_st(&st_p->st_v);
-			free(st_p);
+			a_free(st_p);
 			st_p = t_st_p;
 		}
 	}
+
+	a_free(s_t);
 }
 
 
@@ -177,18 +171,6 @@ void free_st(st* st_p)
 		return;
 	
 	free_string(&st_p->name);
-	switch(st_p->s_t)
-	{
-	case sym_type_string:
-		free_string(&(st_p->s_v.str));
-		break;
-	case sym_type_func:
-		free_tree(st_p->s_v.func);
-		break;
-	case sym_type_al:
-		del_al(st_p->s_v.al);
-		break;
-	}
 	memset(st_p, 0, sizeof(st));
 }
 
@@ -204,45 +186,14 @@ st* add_g_table(st  a_st)
 
 
 // get a func st
-st new_func_st(char* name,  ALEX_FUNC tn_p)
+st new_func_st(char* name)
 {
 	st r_t = {0};
 
-	if(name == NULL|| tn_p == NULL)
+	if(name == NULL)
 		return r_t;
 
 	r_t.s_t = sym_type_func;
-	r_t.s_v.func = tn_p;
-	r_t.name = alex_string(name);
-
-	return r_t;
-}
-
-
-st new_num_st(char* name, ALEX_NUMBER tn_v)
-{
-	st r_t = {0};
-	
-	if(name == NULL)
-		return r_t;
-
-	r_t.s_t = sym_type_num;
-	r_t.s_v.num = tn_v;
-	r_t.name = alex_string(name);
-
-	return r_t;
-}
-
-
-st new_str_st(char* name, ALEX_STRING tn_s)
-{
-	st r_t = {0};
-	
-	if(name == NULL)
-		return r_t;
-
-	r_t.s_t = sym_type_string;
-	r_t.s_v.str = alex_string(tn_s.s_ptr);
 	r_t.name = alex_string(name);
 
 	return r_t;

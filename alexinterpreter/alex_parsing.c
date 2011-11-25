@@ -108,7 +108,7 @@ tree_node* alex_parsing(token_list* t_lt)
 				{
 					if(look_table(global_table, r_tn->b_v.name.s_ptr)==NULL)
 					{
-						st* r_st = add_g_table(new_func_st(r_tn->b_v.name.s_ptr, r_tn));
+						add_g_table(new_func_st(r_tn->b_v.name.s_ptr));
 						add_func(r_tn);
 					}
 					else
@@ -321,7 +321,7 @@ tree_node* syn_arg_def(token_list* t_lt)
 			if(type_token(t_lt) == token_type_rbra)
 				return rt_n;
 
-			free(rt_n);
+			a_free(rt_n);
 			rt_n = NULL;
 			break;
 		}
@@ -581,7 +581,7 @@ tree_node* syn_exp_def(token_list* t_lt)
 		rt_n->childs_p[1] = syn_logic_exp(t_lt);
 		if(rt_n->childs_p[1] == NULL)
 		{
-			free(rt_n);
+			a_free(rt_n);
 			return NULL;
 		}
 		op_l=rt_n;					// 迭代解析
@@ -773,7 +773,7 @@ tree_node* syn_factor_exp(token_list* t_lt)
 		{
 			token* n_t = at_token(t_lt);
 			rt_n = new_tree_node(get_line(t_lt), bnf_type_string);
-			rt_n->b_v.str = n_t->token_value.str;
+			rt_n->b_v.str = alex_string(n_t->token_value.str.s_ptr);
 			next_token(t_lt);
 		}
 		break;
@@ -920,7 +920,7 @@ token* look_next_token(token_list* t_lt)
 // 生成一个bnf tree node
 tree_node* new_tree_node(int line, bnf_type b_t)
 {
-	tree_node* n_t_n = (tree_node*)malloc(sizeof(tree_node));
+	tree_node* n_t_n = (tree_node*)a_malloc(sizeof(tree_node));
 	memset(n_t_n, 0, sizeof(tree_node));
 
 	n_t_n->b_t = b_t;
@@ -940,12 +940,16 @@ void free_tree_node(tree_node* t_n)
 	case  bnf_type_var:
 		free_string(&t_n->b_v.name);
 		break;
+	case bnf_type_using:
+		free_string(&t_n->b_v.str);
+		break;
+	case bnf_type_func:
 	case bnf_type_funccall:
 		free_string(&t_n->b_v.name);
 		break;
 	}
 
-	free(t_n);
+	a_free(t_n);
 }
 
 void free_tree(tree_node* tree_head)

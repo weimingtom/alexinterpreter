@@ -101,6 +101,7 @@ typedef struct _com_env{
 extern com_env* com_env_p;
 
 com_env* new_com_env();
+void free_com_env();
 r_addr com_addr(com_env* com_p, char* name, e_gl gl);
 r_addr search_addr(com_env* com_p, char* name);
 int  com_vardef(com_env* com_p, tree_node* t_n, e_gl gl);

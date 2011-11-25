@@ -181,10 +181,26 @@ void alex_get_token(code_buff c_bf)
 	}
 }
 
+void free_token(token* tk_p)
+{
+	if(tk_p==NULL)
+		return;
+
+	switch(tk_p->token_type)
+	{
+	case token_type_string:
+		free_string(&tk_p->token_value.str);
+		break;
+	case token_type_ide:
+		free_string(&tk_p->token_value.name);
+		break;
+	}
+	free_string(&tk_p->token_name);
+}
 
 void add_token(token tk)
 {
-	token_node* t_n = (token_node*)malloc(sizeof(token_node));
+	token_node* t_n = (token_node*)a_malloc(sizeof(token_node));
 	t_n->next = NULL;
 
 	t_n->tk = tk;
@@ -203,7 +219,6 @@ void add_token(token tk)
 		t_l.token_end->next = t_n;
 		t_l.token_end = t_n;
 	}
- 
 }
 
 
@@ -249,7 +264,7 @@ CHECK_IDE:
 			if(s_n)
 			{
 				new_token.token_type = s_n->symbol_type;
-				new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
+//				new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 			}
 			else
 			{
@@ -371,7 +386,7 @@ token get_al_token(code_buff* c_bf)
 		new_token.token_type = token_type_lal;
 	else if(at_char(*c_bf) == ']')
 		new_token.token_type = token_type_ral;
-	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
+//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 	
 	new_token.token_line = c_bf->line;
@@ -389,7 +404,7 @@ token get_seg_token(code_buff* c_bf)
 		new_token.token_type = token_type_lseg;
 	else if(at_char(*c_bf) == '}')
 		new_token.token_type = token_type_rseg;
-	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
+//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 
 	new_token.token_line = c_bf->line;
@@ -403,14 +418,28 @@ token  get_end_token(code_buff* c_bf)
 	
 	cat_char(&new_token.token_name, at_char(*c_bf));
 	new_token.token_type = token_type_end;
-	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
+//	new_token.token_value.name = alex_string(new_token.token_name.s_ptr);
 	next_char(*c_bf);
 
 	new_token.token_line = c_bf->line;
 	return new_token;
 }
 
+void free_token_list(token_list* t_lp)
+{
+	if(t_lp==NULL || t_lp->token_head==NULL)
+		return;
 
+	while(t_lp->token_head)
+	{
+		token_node* t_n =  t_lp->token_head->next;
+		free_token(&(t_lp->token_head->tk));
+		a_free(t_lp->token_head);
+		t_lp->token_head = t_n;
+	}
+
+	memset(&t_l, 0, sizeof(t_l));
+}
 
 void print_token()
 {
