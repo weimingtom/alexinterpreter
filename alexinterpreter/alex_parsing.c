@@ -94,7 +94,7 @@ tree_node* alex_parsing(token_list* t_lt)
 			break;
 		case token_type_using:		// ÒýÈëdll
 			{
-				r_tn = sym_using(t_lt);
+				r_tn = syn_using(t_lt);
 				if(r_tn)
 					add_main(r_tn);
 				else
@@ -161,7 +161,7 @@ int syn_watch(token_list* t_lt,  enum _token_type t_t)
 }
 
 
-tree_node* sym_using(token_list* t_lt)
+tree_node* syn_using(token_list* t_lt)
 {
 	tree_node* rt_n = NULL;
 	
@@ -935,14 +935,11 @@ void free_tree_node(tree_node* t_n)
 	switch(t_n->b_t)
 	{
 	case bnf_type_string:
-		free_string(&t_n->b_v.str);
-		break;
-	case  bnf_type_var:
-		free_string(&t_n->b_v.name);
-		break;
 	case bnf_type_using:
 		free_string(&t_n->b_v.str);
 		break;
+	case bnf_type_var:
+	case bnf_type_al:
 	case bnf_type_func:
 	case bnf_type_funccall:
 		free_string(&t_n->b_v.name);

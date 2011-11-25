@@ -24,7 +24,6 @@ void  alex_init()
 int  alex_run(char* file)
 {
 	int ret = 0;
-//	inter_env env = new_inter_env();
 	tree_node* t_n = NULL;
 
 	if (file==NULL) return 0;
@@ -33,7 +32,7 @@ int  alex_run(char* file)
 	
 	if(alex_com(com_env_p, m_tree.head, f_tree.head)==COM_SUCCESS)
 	{
-/*//		if(com_print(com_env_p) == COM_SUCCESS)
+//		if(com_print(com_env_p) == COM_SUCCESS)
 		{
 			com_to_vm(com_env_p);
 			print("\n\n -----CONSEL-----\n");
@@ -41,7 +40,7 @@ int  alex_run(char* file)
 
 //			vm_print(&alex_vm_env);
 		}
-*/	}
+	}
 	
 	return 1;
 }
@@ -61,12 +60,10 @@ void alex_free()
 
 int main(int arg, char* arg_list[])
 {
-	alex_init();com_to_vm(com_env_p);
-//	alex_run(arg_list[1]);
-	alex_run("F:\\code\\alex\\tt.alx");
-//	print("please any key to be continue!\n");
+	alex_init();
+	alex_run(arg_list[1]);
+//	alex_run("C:\\code\\alex-vm-s\\snake.alx");
 	alex_free();
-	print("mem count = %d\n", mem_count);
-	getchar();
+//	getchar();
 	return 0;
 }
