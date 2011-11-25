@@ -1,4 +1,7 @@
 
+
+using "a_window.dll"
+
 var rect_len = 10;
 var window_w = 50;
 var window_h = 50;
