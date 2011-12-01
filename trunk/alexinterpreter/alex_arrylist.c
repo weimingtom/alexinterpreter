@@ -1,4 +1,3 @@
-#include "alex_interpret.h"
 #include "alex_arrylist.h"
 #include "alex_gc.h"
 #include <stdlib.h>
