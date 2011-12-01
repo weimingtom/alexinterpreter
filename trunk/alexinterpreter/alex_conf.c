@@ -4,9 +4,7 @@
 #include "stdlib.h"
 
 code_buff c_b = {0};
-int mem_count = 0;
-
-
+int mem_count=0;
 
 // 获取文件字节大小
 long fsize( FILE *fp)

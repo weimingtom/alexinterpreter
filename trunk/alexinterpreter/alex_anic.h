@@ -2,7 +2,8 @@
 #define _ALEX_ANIC_H_
 
 #include "alex_conf.h"
-#include "alex_vm.h"
+#include "alex_sym.h"
+//#include "alex_vm.h"
 		
 
 typedef void (*FUNC_REG_FUNC)(char*, void*);
