@@ -17,8 +17,8 @@ typedef struct _code_buff{
 extern code_buff c_b;		
 
 #define at_char(_c_b_)		(*((_c_b_).read_code_ptr) )
-#define next_char(_c_b_)   ( ((_c_b_).read_code_ptr)?(*(++(_c_b_).read_code_ptr) ):(0) )
-#define back_char(_c_b_)	( ((_c_b_).read_code_ptr)?(*(--(_c_b_).read_code_ptr) ):(0) )
+#define next_char(_c_b_)   ( ((_c_b_).read_code_ptr)?(*(++(_c_b_).read_code_ptr) ):((char)0) )
+#define back_char(_c_b_)	( ((_c_b_).read_code_ptr)?(*(--(_c_b_).read_code_ptr) ):((char)0) )
 #define check_next_type(_c_b_)	( ((_c_b_).read_code_ptr)?( ascii_type[*((_c_b_).read_code_ptr+1)] ):(type_null) )
 
 

@@ -60,10 +60,10 @@ void free_code_buff()
 
 void a_free(void* p)
 {
-	(p)?(mem_count--, free(p)):(0);
+	(p!=NULL)?(mem_count--, free(p)):(0);
 }
 
 void* a_malloc(size_t s_t)
 {
-	return (s_t)?(mem_count++, malloc(s_t)):(NULL);
+	return (s_t!=0)?(mem_count++, malloc(s_t)):(NULL);
 }

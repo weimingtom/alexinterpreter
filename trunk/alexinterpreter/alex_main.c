@@ -22,9 +22,6 @@ void  alex_init()
 
 int  alex_run(char* file)
 {
-	int ret = 0;
-	tree_node* t_n = NULL;
-
 	if (file==NULL) return 0;
 	alex_load_file(file);
 	if (alex_parsing(&t_l)==NULL) return 0;

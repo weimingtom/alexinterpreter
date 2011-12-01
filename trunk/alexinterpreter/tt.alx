@@ -1,9 +1,13 @@
-using ".\\a_lib\\a_window\\Debug\\a_window.dll"
-
 function main()
 {
-	var al = [1,2,3];
-	var a = al[0]*10;
+	var a= "string_a";
+	var al = [a, 2, 3];
+	print(al);
+	a = 11;
+	print("\n");
+	print(al);
+	print("\n");
+	print("a = "+a+"\n");
 }
 
 
