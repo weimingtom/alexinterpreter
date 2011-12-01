@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "alex_parsing.h"
-#include "alex_interpret.h"
 #include "alex_sym.h"
 #include "alex_lib.h"
 #include "alex_get_token.h"
