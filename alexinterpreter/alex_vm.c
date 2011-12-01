@@ -28,7 +28,7 @@ int vm_move(vm_env* vm_p, alex_inst* a_i_p);
 int vm_movereg(vm_env* vm_p, alex_inst* a_i_p);
 int vm_call(vm_env* vm_p, alex_inst* a_i_p);
 int vm_jump(vm_env* vm_p, alex_inst* a_i_p);
-int vm_ret(vm_env* vm_p, alex_inst* a_i_p);
+int vm_ret(vm_env* vm_p);
 int vm_newal(vm_env* vm_p, alex_inst* a_i_p);
 int vm_al(vm_env* vm_p, alex_inst* a_i_p);
 int vm_moveal(vm_env* vm_p, alex_inst* a_i_p);
@@ -160,7 +160,7 @@ int alex_vm(vm_env* vm_p)
 			check_vm(vm_jump(vm_p, a_i_p));
 			break;
 		case  RET:
-			check_vm(vm_ret(vm_p, a_i_p));
+			check_vm(vm_ret(vm_p));
 			continue;
 			break;
 		default:
@@ -219,7 +219,6 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 	r_value al = {0};
 	
 	r_value* al_l_p = NULL; 
-	r_value al_l_v = {0};
 
 	check_at_value(al_inx=pop_data(&vm_p->data_ptr), sym_type_num);
 	check_value(al_r_v=top_data(&vm_p->data_ptr));
@@ -623,12 +622,11 @@ int vm_p_call(vm_env* vm_p, r_value* r_v_p)
 	return VM_SUCCESS;
 }
 
-int vm_ret(vm_env* vm_p, alex_inst* a_i_p)
+int vm_ret(vm_env* vm_p)
 {
 	int i=0, len =0;
 	r_value pc_value = {0};
 	r_value local_top_value = {0};
-	r_value local_len_value = {0};
 
 	check_value(local_top_value=pop_data(&vm_p->call_ptr));
 	check_value(pc_value=pop_data(&vm_p->call_ptr));

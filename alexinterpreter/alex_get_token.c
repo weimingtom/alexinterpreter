@@ -345,7 +345,6 @@ END_STRING:
 token get_oper_token(code_buff* c_bf)
 {
 	char t_oper[4] = {0};
-	int i=0;
 	char one_char = 0;
 	token  new_token = {0};
 	sym_node* s_n = NULL;
@@ -377,7 +376,6 @@ token get_oper_token(code_buff* c_bf)
 // 生成数组运算符
 token get_al_token(code_buff* c_bf)
 {
-	char one_char = 0;
 	token  new_token = {0};
 	
 	cat_char(&new_token.token_name, at_char(*c_bf));
@@ -394,7 +392,6 @@ token get_al_token(code_buff* c_bf)
 // 生成域运算符
 token get_seg_token(code_buff* c_bf)
 {
-	char one_char = 0;
 	token  new_token = {0};
 
 	cat_char(&new_token.token_name, at_char(*c_bf));
@@ -410,7 +407,6 @@ token get_seg_token(code_buff* c_bf)
 
 token  get_end_token(code_buff* c_bf)
 {
-	char one_char = 0;
 	token  new_token = {0};
 	
 	cat_char(&new_token.token_name, at_char(*c_bf));
