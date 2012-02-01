@@ -210,14 +210,10 @@ void free_gc()
 int _gc_back_()
 {
 	gc_node* gc_p= alex_gc.gc_head;
-	gc_node* gc_b = gc_p;
-
-
 	while(gc_p)
 	{
 		if(gc_p->gc_level==GC_DEAD || gc_p->gc_count > 0)
 		{
-			gc_b = gc_p;
 			gc_p = gc_p->next;
 			continue;
 		}
@@ -227,10 +223,8 @@ int _gc_back_()
 		case sym_type_string:
 			{
 				gc_node* now_n = gc_p->next;
-				gc_b->next = now_n;
-
 				gc_del_str(gc_p->gc_value.sg_v.str.s_ptr);
-				free_string(&gc_p->gc_value.sg_v.str);
+				free_string(&(gc_p->gc_value.sg_v.str));
 				a_free(gc_p);
 				if(gc_p==alex_gc.gc_head)
 					alex_gc.gc_head = now_n;
@@ -239,9 +233,7 @@ int _gc_back_()
 			break;
 		case sym_type_al:
 			{
-				gc_node* now_n = gc_p->next;
-				gc_b->next = now_n;
-				
+				gc_node* now_n = gc_p->next;	
 				gc_del_al(gc_p->gc_value.sg_v.al, 0);
 				a_free(gc_p);
 				if(gc_p==alex_gc.gc_head)
