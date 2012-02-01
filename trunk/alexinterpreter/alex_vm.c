@@ -16,10 +16,9 @@ vm_env alex_vm_env = {0};
 
 
 int vm_tp(vm_env* vm_p, alex_inst* a_i_p);
-r_value _vm_get_var(vm_env* vm_p, e_gl gl, int addr);
 int push_call(vm_env* vm_p, r_value r_v);
 r_value _top_data(d_data* d_ptr);
-int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v);
+int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value* r_v);
 int vm_add(vm_env* vm_p);
 int vm_pushvar(vm_env* vm_p, alex_inst* a_i_p);
 int vm_jfalse(vm_env* vm_p, alex_inst* a_i_p);
@@ -38,17 +37,17 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 
 #define vm_get_var_l(vm_p, addr)		(	\
 											((addr)>=0 && ( ((vm_p)->local_top+(addr)) < (vm_p)->local_ptr.data_len))?	\
-											((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)]):	\
-											(print("vm[error] get local is fail!\n"), error_v) \
+											(&((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)])):	\
+											(print("vm[error] get local is fail!\n"), &error_v) \
 										)
 
 #define vm_get_var_g(vm_p, addr)		( \
 											( ((addr)<(vm_p)->global_ptr.data_len) && ((addr)>=0) )?	\
-											((vm_p)->global_ptr.root_ptr[(addr)]):	\
-											(print("vm[error] get global is fail!\n"), error_v)	\
+											(&((vm_p)->global_ptr.root_ptr[(addr)])):	\
+											(print("vm[error] get global is fail!\n"), &error_v)	\
 										)
 
-#define vm_get_var_r(vm_p, addr)	( (vm_p)->reg[(addr)] )
+#define vm_get_var_r(vm_p, addr)	( &((vm_p)->reg[(addr)]) )
 
 #define vm_get_var(vm_p, gl, addr)		(  \
 											((gl)==COM_LOCAL)?	\
@@ -59,7 +58,7 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 												( \
 													((gl)==COM_REG)? \
 													( vm_get_var_r((vm_p), (addr)) ):	\
-													( print("vm[error] not find gl!\n"), error_v)	\
+													( print("vm[error] not find gl!\n"), &error_v)	\
 												)  \
 											)	\
 										) 
@@ -177,11 +176,11 @@ int alex_vm(vm_env* vm_p)
 
 int vm_s_b(vm_env* vm_p, alex_inst* a_i_p, byte tt)
 {
-	r_value r_v = {0};
+	r_value* r_v = NULL;
 	r_value r_r_v = {0};
 
 	check_value(r_v=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
-	if(r_v.r_t != sym_type_num)
+	if(r_v->r_t != sym_type_num)
 	{
 		print("vm[error line: %d] ide is not number type!\n", a_i_p->line);
 		return VM_ERROR_ADD_OP;
@@ -190,19 +189,23 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i_p, byte tt)
 	switch(tt)
 	{
 	case SADD:
-		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, r_r_v=new_number(r_v.r_v.num+1)));
-		push_data(&vm_p->data_ptr, r_v);
+		r_r_v=new_number(r_v->r_v.num+1);
+		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, &r_r_v));
+		push_data(&vm_p->data_ptr, *r_v);
 		break;
 	case SSUB:
-		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, r_r_v=new_number(r_v.r_v.num-1)));
-		push_data(&vm_p->data_ptr, r_v);
+		r_r_v=new_number(r_v->r_v.num-1);
+		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, &r_r_v));
+		push_data(&vm_p->data_ptr, *r_v);
 		break;
 	case BSADD:
-		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, r_r_v=new_number(r_v.r_v.num+1)));
+		r_r_v=new_number(r_v->r_v.num+1);
+		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, &r_r_v));
 		push_data(&vm_p->data_ptr, r_r_v);
 		break;
 	case BSSUB:
-		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, r_r_v=new_number(r_v.r_v.num-1)));
+		r_r_v=new_number(r_v->r_v.num-1);
+		check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, &r_r_v));
 		push_data(&vm_p->data_ptr, r_r_v);
 		break;
 	default:
@@ -214,9 +217,9 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i_p, byte tt)
 
 int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value al_inx = {0};
-	r_value al_r_v = {0};
-	r_value al = {0};
+	r_value* al_inx = NULL;
+	r_value* al_r_v = NULL;
+	r_value* al = NULL;
 	
 	r_value* al_l_p = NULL; 
 
@@ -226,22 +229,22 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 
 	check_value(al = vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
 	
-	if(al.r_t != sym_type_al)
+	if(al->r_t != sym_type_al)
 	{
 		print("vm[error line: %d], not al!\n", a_i_p->line);
 		return VM_ERROR_AL;
 	}
 	
-	if( (al_l_p=get_al(al.r_v.al, (int)al_inx.r_v.num))==NULL )
+	if( (al_l_p=get_al(al->r_v.al, (int)al_inx->r_v.num))==NULL )
 	{
-		print("vm[error line: %d], error al index[%d]!", a_i_p->line, (int)al_inx.r_v.num);
+		print("vm[error line: %d], error al index[%d]!", a_i_p->line, (int)al_inx->r_v.num);
 		return VM_ERROR_AL;
 	}
 	
 	check_l_gc(al_l_p);
-	check_r_gc(&al_r_v);
+	check_r_gc(al_r_v);
 	
-	*al_l_p = al_r_v;
+	*al_l_p = *al_r_v;
 	
 	gc_back();
 	return VM_SUCCESS;
@@ -251,11 +254,11 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 int vm_al(vm_env* vm_p, alex_inst* a_i_p)
 {
 	r_value* at_al = NULL;
-	r_value r_index = {0};
-	r_value al = {0};
+	r_value* r_index = NULL;
+	r_value* al = NULL;
 	check_value(r_index=pop_data(&vm_p->data_ptr));
 	
-	if(r_index.r_t != sym_type_num)
+	if(r_index->r_t != sym_type_num)
 	{
 		print("vm[error line: %d] the al index is not number!\n", a_i_p->line);
 		return VM_ERROR_AL;
@@ -264,13 +267,13 @@ int vm_al(vm_env* vm_p, alex_inst* a_i_p)
   
 	check_value(al=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
 
-	if(al.r_t != sym_type_al)
+	if(al->r_t != sym_type_al)
 	{
 		print("vm[error line: %d] the ide is not al!\n", a_i_p->line);
 		return VM_ERROR_AL;
 	}
 	
-	if( (at_al=get_al(al.r_v.al, (int)r_index.r_v.num))==NULL )
+	if( (at_al=get_al(al->r_v.al, (int)r_index->r_v.num))==NULL )
 	{
 		print("vm[error line: %d] not find al index!\n", a_i_p->line);
 		return VM_ERROR_AL;
@@ -286,7 +289,7 @@ int vm_newal(vm_env* vm_p, alex_inst* a_i_p)
 {
 	int i=0;
 	int count = 0;
-	r_value al_one = {0};
+	r_value* al_one = NULL;
 	r_value new_al = {0};
 
 	if(a_i_p->inst_value.r_t != sym_type_num)
@@ -301,12 +304,12 @@ int vm_newal(vm_env* vm_p, alex_inst* a_i_p)
 	{
 		r_value* r_p = NULL;
 		check_value(al_one=pop_data(&vm_p->data_ptr));
-		check_r_gc(&al_one);
+		check_r_gc(al_one);
 		r_p = get_al(new_al.r_v.al, count-i-1);
 		if(r_p==NULL)
 			return VM_ERROR_AL;
 		else
-			*r_p = al_one;
+			*r_p = *al_one;
 	}
 
 	push_data(&vm_p->data_ptr, new_al);
@@ -331,7 +334,7 @@ int vm_addr(vm_env* vm_p, alex_inst* a_i_p)
 
 int vm_movereg(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value r_v = {0};
+	r_value* r_v = NULL;
 	check_value(r_v = top_data(&vm_p->data_ptr));
 	if(a_i_p->gl != COM_REG || a_i_p->inst_value.r_t != sym_type_addr || a_i_p->inst_value.r_v.addr <0 || a_i_p->inst_value.r_v.addr >=REG_LEN)
 	{
@@ -339,23 +342,23 @@ int vm_movereg(vm_env* vm_p, alex_inst* a_i_p)
 		return VM_ERROR;
 	}
 
-	vm_p->reg[a_i_p->inst_value.r_v.addr] = r_v;
+	vm_p->reg[a_i_p->inst_value.r_v.addr] = *r_v;
 
 	return VM_SUCCESS;
 }
 
 int vm_jfalse(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value bool_v = {0};
+	r_value* bool_v = NULL;
 
 	check_value(bool_v=pop_data(&vm_p->data_ptr));
-	if(bool_v.r_t != sym_type_num)
+	if(bool_v->r_t != sym_type_num)
 	{
 		print("vm[error line: %d] the check exp is not bool!\n", a_i_p->line);
 		return VM_ERROR;
 	}
 
-	if((int)(bool_v.r_v.num)==0)
+	if((int)(bool_v->r_v.num)==0)
 	{
 //		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i_p->inst_value.r_v.addr;
@@ -368,16 +371,16 @@ int vm_jfalse(vm_env* vm_p, alex_inst* a_i_p)
 
 int vm_jtrue(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value bool_v = {0};
+	r_value* bool_v = NULL;
 	
 	check_value(bool_v=pop_data(&vm_p->data_ptr));
-	if(bool_v.r_t != sym_type_num)
+	if(bool_v->r_t != sym_type_num)
 	{
 		print("vm[error line: %d] the check exp is not bool!\n", a_i_p->line);
 		return VM_ERROR;
 	}
 	
-	if((int)(bool_v.r_v.num))
+	if((int)(bool_v->r_v.num))
 	{
 //		check_vm(vm_addr(vm_p, a_i));
 		vm_p->pc = a_i_p->inst_value.r_v.addr;
@@ -398,23 +401,23 @@ int vm_jump(vm_env* vm_p, alex_inst* a_i_p)
 
 int vm_add(vm_env* vm_p)
 {
-	r_value l_r_v = {0};
-	r_value r_r_v = {0};
+	r_value* l_r_v = NULL;
+	r_value* r_r_v = NULL;
 	
 	check_value(r_r_v=pop_data(&vm_p->data_ptr));
 	check_value(l_r_v=pop_data(&vm_p->data_ptr));
 	
-	switch(l_r_v.r_t)
+	switch(l_r_v->r_t)
 	{
 	case sym_type_string:
 		{
-			switch(r_r_v.r_t)
+			switch(r_r_v->r_t)
 			{
 			case sym_type_string:		// string + string
 				{
 					r_value r_v = {0};
-					a_string a_s = alex_string(l_r_v.r_v.str.s_ptr);
-					cat_string(&a_s, r_r_v.r_v.str.s_ptr);
+					a_string a_s = alex_string(l_r_v->r_v.str.s_ptr);
+					cat_string(&a_s, r_r_v->r_v.str.s_ptr);
 					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
 					free_string(&a_s);
 					push_data(&vm_p->data_ptr, r_v);
@@ -424,8 +427,8 @@ int vm_add(vm_env* vm_p)
 				{
 					r_value r_v = {0};
 					char t_num[256] = {0};
-					a_string a_s = alex_string(l_r_v.r_v.str.s_ptr);
-					gcvt(r_r_v.r_v.num, 10, t_num);
+					a_string a_s = alex_string(l_r_v->r_v.str.s_ptr);
+					gcvt(r_r_v->r_v.num, 10, t_num);
 					cat_string(&a_s, t_num);
 					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
 					free_string(&a_s);
@@ -440,14 +443,14 @@ int vm_add(vm_env* vm_p)
 		break;
 	case sym_type_num:
 		{
-			switch(r_r_v.r_t)
+			switch(r_r_v->r_t)
 			{
 			case sym_type_string:
 				{
 					r_value r_v = {0};
 					char t_num[256]={0};
-					a_string a_s = alex_string(gcvt(l_r_v.r_v.num, 10, t_num));
-					cat_string(&a_s, r_r_v.r_v.str.s_ptr);
+					a_string a_s = alex_string(gcvt(l_r_v->r_v.num, 10, t_num));
+					cat_string(&a_s, r_r_v->r_v.str.s_ptr);
 					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
 					free_string(&a_s);
 					push_data(&vm_p->data_ptr, r_v);
@@ -456,7 +459,7 @@ int vm_add(vm_env* vm_p)
 			case sym_type_num:
 				{
 					r_value r_v = new_number(0);
-					r_v.r_v.num = l_r_v.r_v.num+r_r_v.r_v.num;
+					r_v.r_v.num = l_r_v->r_v.num+r_r_v->r_v.num;
 					push_data(&vm_p->data_ptr, r_v);
 				}
 				break;
@@ -475,10 +478,10 @@ int vm_add(vm_env* vm_p)
 
 int vm_pushvar(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value r_v = {0};
+	r_value* r_v = NULL;
 	check_value(r_v=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
 	
-	push_data(&vm_p->data_ptr, r_v);
+	push_data(&vm_p->data_ptr, *r_v);
 	return VM_SUCCESS;
 }
 
@@ -486,7 +489,7 @@ int vm_pushvar(vm_env* vm_p, alex_inst* a_i_p)
 
 int vm_move(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value r_v = {0};
+	r_value* r_v = NULL;
 	
 	check_value(r_v = top_data(&vm_p->data_ptr));
 	check_vm(vm_set_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr, r_v));
@@ -495,8 +498,11 @@ int vm_move(vm_env* vm_p, alex_inst* a_i_p)
 
 
 // 设置 gl addr 上地址上的值为 r_v
-int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
+int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value* r_v)
 {
+	if(r_v==NULL)
+		return	VM_ERROR;
+
 	switch(gl)
 	{
 	case COM_LOCAL:
@@ -505,8 +511,8 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 			{
 				r_value* r_p = &vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
 				check_l_gc(r_p);
-				check_r_gc(&r_v);
-				*r_p = r_v;
+				check_r_gc(r_v);
+				*r_p = *r_v;
 				
 				gc_back();
 			}
@@ -523,8 +529,8 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 			{
 				r_value* r_p = &vm_p->global_ptr.root_ptr[addr];
 				check_l_gc(r_p);
-				check_r_gc(&r_v);
-				*r_p = r_v;
+				check_r_gc(r_v);
+				*r_p = *r_v;
 			}
 			else
 			{
@@ -538,46 +544,14 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value r_v)
 	return VM_SUCCESS;
 }
 
-
-
-r_value _vm_get_var(vm_env* vm_p, e_gl gl, int addr)
-{
-	switch(gl)
-	{
-	case COM_LOCAL:
-		{
-			if(addr>=0 && ( (vm_p->local_top+addr) < vm_p->local_ptr.data_len))
-				return vm_p->local_ptr.root_ptr[vm_p->local_top+addr];
-			else
-				print("vm[error] get local is fail!\n");
-		}
-		break;
-	case COM_GLOBAL:
-		{
-			if( (addr<vm_p->global_ptr.data_len) && (addr>=0) )
-				return vm_p->global_ptr.root_ptr[addr];
-			else
-				print("vm[error] get global is fail!\n");
-		}
-		break;
-	case COM_REG:
-			return vm_p->reg[addr];
-	default:
-		print("vm[error] not find gl!\n");
-		break;
-	}
-
-	return error_v;
-}
-
 int vm_call(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value r_v = {0};
+	r_value* r_v = NULL;
 	next_pc(vm_p);
 	
 	// get jump addr
 	check_value(r_v=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
-	check_vm(vm_p_call(vm_p, &r_v));
+	check_vm(vm_p_call(vm_p, r_v));
 
 	return VM_SUCCESS;
 }
@@ -625,23 +599,23 @@ int vm_p_call(vm_env* vm_p, r_value* r_v_p)
 int vm_ret(vm_env* vm_p)
 {
 	int i=0, len =0;
-	r_value pc_value = {0};
-	r_value local_top_value = {0};
+	r_value* pc_value = NULL;
+	r_value* local_top_value = NULL;
 
 	check_value(local_top_value=pop_data(&vm_p->call_ptr));
 	check_value(pc_value=pop_data(&vm_p->call_ptr));
 
 	// resume pc
-	vm_p->pc = pc_value.r_v.addr;
+	vm_p->pc = pc_value->r_v.addr;
 	len = vm_p->local_ptr.data_len;
 	// free local stack memory  if var is string or al will free 
 	for(i=vm_p->local_top; i<len; i++)
 	{
-		r_value l_r_v = pop_data(&vm_p->local_ptr);
-		check_l_gc(&l_r_v);		// clear gc count
+		r_value* l_r_v = pop_data(&vm_p->local_ptr);
+		check_l_gc(l_r_v);		// clear gc count
 	}
 
-	vm_p->local_top = local_top_value.r_v.addr;
+	vm_p->local_top = local_top_value->r_v.addr;
 
 	gc_back();
 	return VM_SUCCESS;
@@ -649,14 +623,14 @@ int vm_ret(vm_env* vm_p)
 
 int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value l_r_v ={0};
-	r_value r_r_v ={0};
+	r_value* l_r_v =NULL;
+	r_value* r_r_v =NULL;
 	r_value ret_value={0};
 
 	check_value(r_r_v=pop_data(&vm_p->data_ptr));
 	check_value(l_r_v=pop_data(&vm_p->data_ptr));
 
-	if(l_r_v.r_t != sym_type_num || r_r_v.r_t != sym_type_num)
+	if(l_r_v->r_t != sym_type_num || r_r_v->r_t != sym_type_num)
 	{
 		print("vm[error line: %d] the op value not number!\n", a_i_p->line);
 		return VM_ERROR_OP_VALUE;
@@ -665,40 +639,40 @@ int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 	switch(a_i_p->inst_type)
 	{
 	case SUB:
-		ret_value = new_number(l_r_v.r_v.num - r_r_v.r_v.num);
+		ret_value = new_number(l_r_v->r_v.num - r_r_v->r_v.num);
 		break;
 	case MUL:
-		ret_value = new_number(l_r_v.r_v.num * r_r_v.r_v.num);
+		ret_value = new_number(l_r_v->r_v.num * r_r_v->r_v.num);
 		break;
 	case DEV:
-		ret_value = new_number(l_r_v.r_v.num / r_r_v.r_v.num);
+		ret_value = new_number(l_r_v->r_v.num / r_r_v->r_v.num);
 		break;
 	case MOD:
-		ret_value = new_number((int)(l_r_v.r_v.num) % (int)(r_r_v.r_v.num));
+		ret_value = new_number((int)(l_r_v->r_v.num) % (int)(r_r_v->r_v.num));
 		break;
 	case AND:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) && (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) && (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case OR:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) || (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) || (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case BIG:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) > (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) > (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case BIGE:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) >= (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) >= (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case LIT:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) < (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) < (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case LITE:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) <= (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) <= (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case EQU:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) == (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) == (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	case NEQU:
-		ret_value = new_number( ((int)(l_r_v.r_v.num) != (int)(r_r_v.r_v.num))?(1):(0) );
+		ret_value = new_number( ((int)(l_r_v->r_v.num) != (int)(r_r_v->r_v.num))?(1):(0) );
 		break;
 	default:
 		print("vm[error line: %d] not op inst!\n", a_i_p->line);

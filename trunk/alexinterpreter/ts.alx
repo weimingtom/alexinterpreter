@@ -1,9 +1,43 @@
-using "a_util.dll" 
+## message 协议文件··
 
-function main()
-{
-	print_a(123);
+
+message m_a_1{
+	int d1_1;
+	int d1_2;
+	int d1_3;
+	
+	message m_o1{
+		int o_1;
+		int o_2;
+	}
+	
+	repeated m_o1 o1;
 }
 
 
-main();
+message m_a_2{
+	int d2_1;
+	int d2_2;
+	int d2_3;
+}
+
+## end
+
+env = new_env();										# 创建新的message 环境
+
+reg_pb(env, "a.pb");								# 向环境中注册 "a.pb"协议结构
+
+handle = get_whandle(env, "a");			# 获得message a的写句柄
+
+h_write(handle, "a.d1_1=%d", 12);			# 写入数据文件
+
+for(i=0; i<3; i++)
+{
+	h_write(handle,"a.olo_1[%d].o_1 = %d", i, 1);
+	h_write(handle,"a.olo_1[%d].o_2 = %d", i, 2);
+}
+
+send(toal(handle));
+
+del_handle(handle);
+del_env(env);

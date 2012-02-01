@@ -116,14 +116,14 @@ typedef struct _vm_env
 #define relloc_local(d_d)	relloc_data((d_d), LOCAL_MEM_LEN)
 #define relloc_global(d_d)	relloc_data((d_d), GLOBAL_MEM_LEN)
 #define relloc_call(d_d)	relloc_data((d_d), CALL_MEM_LEN)
-#define check_value(r_v)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error) { print("vm[error pc: %d] you are try pop a error value!\n", alex_vm_env.pc); return VM_ERROR_POP;} }while(0)
-#define check_at_value(r_v, tt)	do{r_value t_r_v=(r_v);if(t_r_v.r_t==sym_type_error || t_r_v.r_t!=(tt)) return VM_ERROR_POP;}while(0) 
+#define check_value(r_v_p)	do{r_value* t_r_v_p=(r_v_p);if(t_r_v_p==NULL || t_r_v_p->r_t==sym_type_error) { print("vm[error pc: %d] you are try pop a error value!\n", alex_vm_env.pc); return VM_ERROR_POP;} }while(0)
+#define check_at_value(r_v_p, tt)	do{r_value* t_r_v_p=(r_v_p);if(t_r_v_p==NULL || t_r_v_p->r_t==sym_type_error || t_r_v_p->r_t!=(tt)) return VM_ERROR_POP;}while(0) 
 #define check_vm(rt)		do{int r=(rt); if(r) return r;}while(0)
 
 //#define pop_data		_pop_data
 //#define pop_data(dp)	((dp)->root_ptr[(--((dp)->data_len))])
-#define  pop_data(dp)  ( ((dp)==NULL || (dp)->data_len<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), error_v):((dp)->root_ptr[(--(dp)->data_len)])  )
-#define top_data(dp)	( ((dp)==NULL || (dp)->data_len<=0)?(error_v):((dp)->root_ptr[(dp)->data_len-1]) )
+#define pop_data(dp)		( ((dp)==NULL || (dp)->data_len<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), &error_v):(&((dp)->root_ptr[(--(dp)->data_len)]))  )
+#define top_data(dp)		( ((dp)==NULL || (dp)->data_len<=0)?(&error_v):(&((dp)->root_ptr[(dp)->data_len-1])) )
 #define push_data(dp, r)	do{if((dp)) {relloc_data((dp), DATA_MEM_LEN);(dp)->root_ptr[(dp)->data_len++] = (r);} }while(0)
 //#define push_data 	_push_data
 
