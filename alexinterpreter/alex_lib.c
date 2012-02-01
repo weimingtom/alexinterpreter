@@ -62,17 +62,17 @@ void print_value(r_value  val)
 // ´òÓ¡¿âº¯Êı
 int alex_print(vm_env* vm_p)
 {
-	r_value r_v = pop_data(&vm_p->data_ptr);
-	print_value(r_v);
+	r_value* r_v = pop_data(&vm_p->data_ptr);
+	print_value(*r_v);
 	
 	return 0;
 }
 
 int alex_len(vm_env* vm_p)
 {
-	r_value al = pop_data(&vm_p->data_ptr);
+	r_value* al = pop_data(&vm_p->data_ptr);
 
-	push_data(&vm_p->data_ptr, new_number(al.r_v.al->al_len));
+	push_data(&vm_p->data_ptr, new_number(al->r_v.al->al_len));
 	return 1;
 }
 
@@ -80,10 +80,10 @@ int alex_len(vm_env* vm_p)
 
 int alex_add(vm_env* vm_p)
 {
-	r_value r_v = pop_data(&vm_p->data_ptr);
-	r_value al =  pop_data(&vm_p->data_ptr);
+	r_value* r_v = pop_data(&vm_p->data_ptr);
+	r_value* al =  pop_data(&vm_p->data_ptr);
 
-	push_data(&vm_p->data_ptr, add_al(al.r_v.al, r_v));
+	push_data(&vm_p->data_ptr, add_al(al->r_v.al, *r_v));
 
 	return 1;
 }

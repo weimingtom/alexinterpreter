@@ -18,7 +18,7 @@ function main()
 	sort(al);
 	var e_t = t_time();		
 	print("\n sort end! t_time = "+e_t+" off_time:"+(e_t-b_t)+"\n");
-	print(al);
+	#print(al);
 }
 
 function sort(var al)

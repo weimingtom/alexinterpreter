@@ -34,7 +34,7 @@ int  alex_run(char* file)
 			print("\n\n -----CONSEL-----\n");
 			alex_vm(&alex_vm_env);
 
-//			vm_print(&alex_vm_env);
+			vm_print(&alex_vm_env);
 		}
 	}
 	
@@ -58,8 +58,9 @@ int main(int arg, char* arg_list[])
 {
 	alex_init();
 	alex_run(arg_list[1]);
-//	alex_run("C:\\code\\alex-vm-s\\snake.alx");
+//	alex_run("F:\\code\\alex\\tt.alx");
 	alex_free();
+//	print("mem = %d\n", mem_count);
 //	getchar();
 	return 0;
 }
