@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "alex_conf.h"
 
+#define base_ptr(ptr)  (((ptr)==NULL)?(NULL):((ptr)-sizeof(int)))
 /*
 	ALEX ×Ö·û´®´¦Àí
 */
@@ -55,18 +56,24 @@ char* cat_a_string(a_string* a_s, a_string add_a_s)
 
 a_string* relloc_string(a_string* a_s, int a_size)
 {
+	int s_size = 0;
 	if(a_s == NULL)
 		return NULL;
 	
-	if((a_s->s_size - a_s->s_len-1)<a_size )
+	if(a_s->s_ptr)
+		s_size = *((int*)(a_s->s_ptr-sizeof(int)));
+
+	if((s_size - a_s->s_len-1)<a_size )
 	{
 		char* new_ptr = NULL;
 
-		a_s->s_size += 64*(1+ (a_size- a_s->s_size +a_s->s_len+1)/64 );
-		new_ptr = (char*)a_malloc(a_s->s_size);
-		memset(new_ptr, 0, a_s->s_size);
+		s_size += 64*(1+ (a_size- s_size +a_s->s_len+1)/64 );
+		new_ptr = (char*)a_malloc(s_size+sizeof(int));
+		*((int*)new_ptr) = s_size;
+		new_ptr += sizeof(int);
+		memset(new_ptr, 0, s_size);
 		strncpy(new_ptr, a_s->s_ptr, a_s->s_len); 
-		a_free(a_s->s_ptr);
+		a_free(base_ptr(a_s->s_ptr));
 		a_s->s_ptr = new_ptr;
 	}
 
@@ -106,7 +113,7 @@ void free_string(a_string* a_s)
 		return;
 	
 	if(a_s->s_ptr)
-		a_free(a_s->s_ptr);
+		a_free(base_ptr(a_s->s_ptr));
 
 	memset(a_s, 0, sizeof(a_string));
 }
