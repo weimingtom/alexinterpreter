@@ -63,10 +63,10 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 											)	\
 										) 
 
-
 // vm cpu
 int alex_vm(vm_env* vm_p)
 {
+	
 	alex_inst* a_i_p = NULL;
 	byte i_t = END;
 	if(vm_p==NULL)
@@ -497,7 +497,7 @@ int vm_move(vm_env* vm_p, alex_inst* a_i_p)
 }
 
 
-// ÉèÖÃ gl addr ÉÏµØÖ·ÉÏµÄÖµÎª r_v
+//  gl addr ÏµÖ·ÏµÖµÎª r_v
 int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value* r_v)
 {
 	if(r_v==NULL)
@@ -625,7 +625,6 @@ int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 {
 	r_value* l_r_v =NULL;
 	r_value* r_r_v =NULL;
-	r_value ret_value={0};
 
 	check_value(r_r_v=pop_data(&vm_p->data_ptr));
 	check_value(l_r_v=pop_data(&vm_p->data_ptr));
@@ -639,63 +638,61 @@ int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 	switch(a_i_p->inst_type)
 	{
 	case SUB:
-		ret_value = new_number(l_r_v->r_v.num - r_r_v->r_v.num);
+		push_data(&vm_p->data_ptr, new_number(l_r_v->r_v.num - r_r_v->r_v.num));
 		break;
 	case MUL:
-		ret_value = new_number(l_r_v->r_v.num * r_r_v->r_v.num);
+		push_data(&vm_p->data_ptr, new_number(l_r_v->r_v.num * r_r_v->r_v.num));
 		break;
 	case DEV:
-		ret_value = new_number(l_r_v->r_v.num / r_r_v->r_v.num);
+		push_data(&vm_p->data_ptr, new_number(l_r_v->r_v.num / r_r_v->r_v.num));
 		break;
 	case MOD:
-		ret_value = new_number((int)(l_r_v->r_v.num) % (int)(r_r_v->r_v.num));
+		push_data(&vm_p->data_ptr, new_number((int)(l_r_v->r_v.num) % (int)(r_r_v->r_v.num)));
 		break;
 	case AND:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) && (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) && (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case OR:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) || (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) || (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case BIG:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) > (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) > (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case BIGE:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) >= (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) >= (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case LIT:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) < (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) < (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case LITE:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) <= (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) <= (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case EQU:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) == (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) == (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case NEQU:
-		ret_value = new_number( ((int)(l_r_v->r_v.num) != (int)(r_r_v->r_v.num))?(1):(0) );
+		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) != (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	default:
 		print("vm[error line: %d] not op inst!\n", a_i_p->line);
 		return VM_ERROR;
 	}
 
-	push_data(&vm_p->data_ptr,ret_value);
-
 	return VM_SUCCESS;
 }
 
 
 
-// ±àÒëµ½ÐéÄâ»úµÄÈë¿Ú
+// ëµ½
 vm_env* com_to_vm(com_env* com_p)
 {
 	free_vm_evn(&alex_vm_env);
 	
-	alex_vm_env.code_ptr = com_p->com_inst;			// ´«µÝ±àÒëÆ÷´«¹ýÀ´µÄ»ã±àÖ¸Áî
+	alex_vm_env.code_ptr = com_p->com_inst;			// Ý±Ä»Ö¸
 	relloc_stack(&alex_vm_env.data_ptr);
 	relloc_local(&alex_vm_env.data_ptr);
 	relloc_call(&alex_vm_env.call_ptr);
-	alex_vm_env.global_ptr = com_p->var_table.global_ptr;	// »ñÈ¡±à¼­Æ÷½âÎöµÄÈ«¾Ö±äÁ¿
+	alex_vm_env.global_ptr = com_p->var_table.global_ptr;	// È¡à¼­È«Ö±
 
 	alex_vm_env.local_top = 0;
 	alex_vm_env.pc = com_p->pc;
@@ -830,32 +827,6 @@ void push_stack(vm_env* vm_p, r_value r_v)
 	vm_p->data_ptr.root_ptr[(vm_p->data_ptr.data_len)++] = r_v;
 	
 	vm_p->top = vm_p->data_ptr.data_len;
-}
-
-
-// push local ide  return is offset local_top 
-int push_local(vm_env* vm_p, r_value r_v)
-{
-	if(vm_p==NULL)
-		return -1;
-	
-	relloc_local(&vm_p->local_ptr);
-	vm_p->local_ptr.root_ptr[(vm_p->local_ptr.data_len)] = r_v;
-	
-	return ((vm_p->local_ptr.data_len++) -vm_p->local_top);
-}
-
-
-// push global ide, return is data_len, because global stack is only one
-int push_global(vm_env* vm_p, r_value r_v)
-{
-	if(vm_p==NULL)
-		return -1;
-	
-	relloc_global(&vm_p->global_ptr);
-	vm_p->global_ptr.root_ptr[(vm_p->global_ptr.data_len)] = r_v;
-	
-	return (vm_p->global_ptr.data_len)++;
 }
 
 // when func call, push pc, local_top
