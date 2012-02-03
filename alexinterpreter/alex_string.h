@@ -5,7 +5,7 @@
 typedef struct _a_string{
 	char*  s_ptr;			// 字符串指针
 	int	s_len;				// 字符串已用长度
-	int s_size;				// 字符串缓存大小
+//	int s_size;				// 字符串缓存大小
 }a_string;
 
 
