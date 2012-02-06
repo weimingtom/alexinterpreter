@@ -29,7 +29,7 @@ int alex_reg_dll(char* dll)
 {
 	FUNC_INIT_REG init_reg = NULL;
 	FUNC_DELL_REG dll_reg = NULL;
-	HINSTANCE hinstance=LoadLibrary(dll);
+	HINSTANCE hinstance=LoadLibraryEx(dll, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 	
 	if(hinstance && dll)
 	{
