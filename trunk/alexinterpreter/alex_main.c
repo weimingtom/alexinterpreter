@@ -28,13 +28,16 @@ int  alex_run(char* file)
 	
 	if(alex_com(com_env_p, m_tree.head, f_tree.head)==COM_SUCCESS)
 	{
-//		if(com_print(com_env_p) == COM_SUCCESS)
+#ifdef _DEBUG
+		if(com_print(com_env_p) == COM_SUCCESS)
+#endif
 		{
 			com_to_vm(com_env_p);
 			print("\n\n -----CONSEL-----\n");
 			alex_vm(&alex_vm_env);
-
-		//	vm_print(&alex_vm_env);
+#ifdef _DEBUG
+			vm_print(&alex_vm_env);
+#endif
 		}
 	}
 	
@@ -53,14 +56,18 @@ void alex_free()
 	free_gc();
 }
 
-
 int main(int arg, char* arg_list[])
 {
 	alex_init();
 	alex_run(arg_list[1]);
-//	alex_run("F:\\code\\alex\\tt.alx");
+#ifdef _DEBUG
+	alex_run("F:\\code\\alex\\sort.alx");
+#endif
+
 	alex_free();
-//	print("mem = %d\n", mem_count);
-//	getchar();
+#ifdef _DEBUG
+	print("mem = %d\n", mem_count);
+	getchar();
+#endif
 	return 0;
 }
