@@ -1,0 +1,24 @@
+
+# rpc_lua_value 
+
+
+message rpc_lua_data {
+	message rpc_lua_table {
+		message rpc_lua_table_one {
+			string s_key;
+			int32  n_key;
+			rpc_lua_data value;
+		}
+		rpc_lua_table_one[] table_value;
+	}
+	
+	int32   			rpc_data_type;	 #luaµƒ¿‡–Õ string: 1, number: 2, bool: 3, table: 4
+	int32   			rpc_number;
+	string  			rpc_str;
+	int32   			rpc_bool;
+	rpc_lua_table	rpc_table;
+}
+     
+message rpc_lua {
+	rpc_lua_data[] rpc_ret;		
+}
