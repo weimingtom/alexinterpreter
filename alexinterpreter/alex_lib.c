@@ -24,10 +24,11 @@ void reg_dll(char* str, ALEX_FUNC a_f)
 
 void print_value(r_value  val)
 {
+	char n_buffer[64] = {0};
 	switch(val.r_t)
 	{
 	case sym_type_num:
-		a_print("%lf", val.r_v.num);
+		a_print("%.14g", val.r_v.num);
 		break;
 	case sym_type_string:
 		a_print("%s", val.r_v.str.s_ptr);

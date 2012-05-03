@@ -1,5 +1,4 @@
-using "a_window.dll"
-
+using  "a_window.dll"
 function main()
 {
 	var al  = [];
