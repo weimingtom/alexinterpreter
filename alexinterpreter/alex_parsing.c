@@ -851,7 +851,7 @@ tree_node* syn_al_def(token_list* t_lt)
 }
 
 
-// arraylist[]
+// arraylist al[EXP][EXP]...
 tree_node* syn_at_al(token_list* t_lt)
 {
 	tree_node* rt_n = new_tree_node(get_line(t_lt), bnf_type_al);

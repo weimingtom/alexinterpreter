@@ -37,7 +37,7 @@ char* com_str[] = {
 	"VAR",
 	"PUSHVAR",	
 	"POP",		
-	"NEWAL",		
+	"NEWAL",
 	"AL",			
 	"JFALSE",		
 	"JTRUE",		
@@ -716,6 +716,7 @@ int com_exp_stmt(com_env* com_p, tree_node* t_n)
 
 int com_al(com_env* com_p, tree_node* t_n, ubyte v_p)
 {
+	tree_node* exp = NULL;
 	r_addr r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
 	// check al is true
 	if(r_a.gl== COM_ERROR)
@@ -731,13 +732,21 @@ int com_al(com_env* com_p, tree_node* t_n, ubyte v_p)
 		return COM_ERROR_NOT_AL_INX;
 	}
 
-	check_com(com_exp(com_p, t_n->childs_p[0]));
-	if(v_p==COM_VALUE)
-		push_inst(&com_p->com_inst, new_inst(AL, r_a.gl, r_a.addr));
-	else if(v_p==COM_POINT)
+	exp = t_n->childs_p[0];
+	push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+	
+	while(exp->next)
 	{
-		push_inst(&com_p->com_inst, new_inst(MOVEAL, r_a.gl, r_a.addr));
+		check_com(com_exp(com_p, exp));
+		push_inst(&com_p->com_inst, new_inst(AL));
+		exp = exp->next;
 	}
+
+	check_com(com_exp(com_p, exp));
+	if(v_p==COM_VALUE)
+		push_inst(&com_p->com_inst, new_inst(AL));
+	else if(v_p==COM_POINT)
+		push_inst(&com_p->com_inst, new_inst(MOVEAL));
 	else
 		return COM_ERROR_OTHER;
 
@@ -930,14 +939,12 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 	switch(a_i.inst_type)
 	{
 	case CALL:
-	case AL:
 	case MOVE:
 	case PUSHVAR:
 	case SADD:
 	case BSADD:
 	case SSUB:
 	case BSSUB:
-	case MOVEAL:
 		{
 			a_i.gl = (e_gl)va_arg(arg_list, e_gl);			// get gl
 			a_i.inst_value.r_v.addr = va_arg(arg_list, int);// get addr
@@ -999,7 +1006,7 @@ int com_print_inst_value(alex_inst a_i, int pc)
 	switch(a_i.inst_value.r_t)
 	{
 	case sym_type_num:
-		print(" %10lf	", a_i.inst_value.r_v.num);
+		print(" %10.14g	", a_i.inst_value.r_v.num);
 		break;
 	case sym_type_string:
 		print("  \"%s\"	", a_i.inst_value.r_v.str.s_ptr);

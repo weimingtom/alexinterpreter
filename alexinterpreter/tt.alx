@@ -1,12 +1,9 @@
 
-
 function main()
 {
-	var al = [1,2,3];
-	var i= 1, j=2;
-	if(al[i] < al[j])
-		print("lite");
-}
+	var al = [1, [2, 22], 3];
 
+	print(al[1]);
+}
 
 main();
