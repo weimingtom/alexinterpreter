@@ -32,19 +32,7 @@ typedef enum _e_reg_{
 	COM_RET_LEN
 }e_reg;
 
-typedef enum _e_gl{
-	COM_ERROR,
 
-	COM_GLOBAL,
-	COM_LOCAL,
-
-	COM_VALUE,
-	COM_POINT,
-
-	COM_REG,
-
-	COM_GL_COUNT
-}e_gl;
 
 typedef struct _r_addr{
 	e_gl gl;

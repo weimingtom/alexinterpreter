@@ -35,35 +35,37 @@ int vm_addr(vm_env* vm_p, alex_inst* a_i_p);
 int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 
 // 
-#define vm_get_var_l(vm_p, addr)		(	\
-											((addr)>=0 && ( ((vm_p)->local_top+(addr)) < (vm_p)->local_ptr.data_len))?	\
-											(&((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)])):	\
-											(print("vm[error] get local is fail!\n"), &error_v) \
-										)
-
-#define vm_get_var_g(vm_p, addr)		( \
-											( ((addr)<(vm_p)->global_ptr.data_len) && ((addr)>=0) )?	\
-											(&((vm_p)->global_ptr.root_ptr[(addr)])):	\
-											(print("vm[error] get global is fail!\n"), &error_v)	\
-										)
-
-#define vm_get_var_r(vm_p, addr)	( &((vm_p)->reg[(addr)]) )
-
-#define vm_get_var(vm_p, gl, addr)		(  \
-											((gl)==COM_LOCAL)?	\
-											( vm_get_var_l((vm_p), (addr)) ):	\
-											( \
-												((gl)==COM_GLOBAL)?	\
-												( vm_get_var_g((vm_p), (addr)) ):	\
-												( \
-													((gl)==COM_REG)? \
-													( vm_get_var_r((vm_p), (addr)) ):	\
-													( print("vm[error] not find gl!\n"), &error_v)	\
-												)  \
-											)	\
-										) 
+// #define vm_get_var_l(vm_p, addr)		(	\
+// 											((addr)>=0 && ( ((vm_p)->local_top+(addr)) < (vm_p)->local_ptr.data_len))?	\
+// 											(&((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)])):	\
+// 											(print("vm[error] get local is fail!\n"), &error_v) \
+// 										)
 // 
-// #define vm_get_var(vm_p, gl, addr)	 ( &( (*(vm_p->glr[gl]))->rppt_ptr ) )
+// #define vm_get_var_g(vm_p, addr)		( \
+// 											( ((addr)<(vm_p)->global_ptr.data_len) && ((addr)>=0) )?	\
+// 											(&((vm_p)->global_ptr.root_ptr[(addr)])):	\
+// 											(print("vm[error] get global is fail!\n"), &error_v)	\
+// 										)
+// 
+// #define vm_get_var_r(vm_p, addr)	( &((vm_p)->reg[(addr)]) )
+// 
+// #define vm_get_var(vm_p, gl, addr)		(  \
+// 											((gl)==COM_LOCAL)?	\
+// 											( vm_get_var_l((vm_p), (addr)) ):	\
+// 											( \
+// 												((gl)==COM_GLOBAL)?	\
+// 												( vm_get_var_g((vm_p), (addr)) ):	\
+// 												( \
+// 													((gl)==COM_REG)? \
+// 													( vm_get_var_r((vm_p), (addr)) ):	\
+// 													( print("vm[error] not find gl!\n"), &error_v)	\
+// 												)  \
+// 											)	\
+// 										) 
+// 
+
+#define vm_get_var_grl(vm_p, gl, addr)   (&( (*(vm_p->glr[gl]))[(addr)] ) )
+#define vm_get_var(vm_p, gl, addr)	    ( (gl==COM_LOCAL)?(vm_get_var_grl(vm_p, gl, addr+vm_p->local_top)):(vm_get_var_grl(vm_p, gl, addr)) )
 
 // vm 
 int alex_vm(vm_env* vm_p)
@@ -699,9 +701,10 @@ vm_env* com_to_vm(com_env* com_p)
 
 	alex_vm_env.local_top = 0;
 	alex_vm_env.pc = com_p->pc;
+	alex_vm_env.reg_p = alex_vm_env.reg;
 	alex_vm_env.glr[COM_LOCAL] = &(alex_vm_env.local_ptr.root_ptr);
 	alex_vm_env.glr[COM_GLOBAL] = &(alex_vm_env.global_ptr.root_ptr);
-	alex_vm_env.glr[COM_REG]  = &(&(alex_vm_env.reg[0]));
+	alex_vm_env.glr[COM_REG]  = &(alex_vm_env.reg_p);
 
 	return &alex_vm_env;
 }
