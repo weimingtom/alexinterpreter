@@ -22,6 +22,20 @@ enum _e_vm_ret{
 	VM_ERROR_AL
 };
 
+typedef enum _e_gl{
+	COM_ERROR,
+		
+	COM_GLOBAL,
+	COM_LOCAL,
+	
+	COM_VALUE,
+	COM_POINT,
+	
+	COM_REG,
+	
+	COM_GL_COUNT
+}e_gl;
+
 enum _e_register{
 	REG_AX,
 	REG_BX,
@@ -102,6 +116,7 @@ typedef struct _vm_env
 	int			pc;				// 程序计数器
 
 	r_value		reg[REG_LEN];// 寄存器
+	r_value*	reg_p;
 	d_data		data_ptr;	// 数据堆栈段指针
 	int			top;		// 数据段堆栈指针		
 
@@ -111,7 +126,7 @@ typedef struct _vm_env
 	d_data		call_ptr;	// 函数调用堆栈
 	d_data		global_ptr;	//全局变量堆栈
 
-	r_value** glr[6];		// 全局 局部 寄存器 块表
+	r_value** glr[COM_GL_COUNT];		// 全局 局部 寄存器 块表
 }vm_env;
 
 #define relloc_stack(d_d)	relloc_data((d_d), DATA_MEM_LEN)

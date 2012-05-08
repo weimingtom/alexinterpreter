@@ -61,7 +61,7 @@ int main(int arg, char* arg_list[])
 	alex_init();
 	alex_run(arg_list[1]);
 #ifdef _DEBUG
-	alex_run("F:\\code\\alex\\tt.alx");
+	alex_run("sort.alx");
 #endif
 
 	alex_free();

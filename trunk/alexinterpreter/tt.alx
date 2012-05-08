@@ -1,9 +1,9 @@
 
 function main()
 {
-	var al = [1, [2, 22], 3];
+	var al = [1, [2, 22, [333, [4444] ]], 3];
 
-	print(al[1]);
+	print(al[1][2][1][0]);
 }
 
 main();
