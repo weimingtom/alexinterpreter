@@ -110,6 +110,8 @@ typedef struct _vm_env
 	
 	d_data		call_ptr;	// 函数调用堆栈
 	d_data		global_ptr;	//全局变量堆栈
+
+	r_value** glr[6];		// 全局 局部 寄存器 块表
 }vm_env;
 
 #define relloc_stack(d_d)	relloc_data((d_d), DATA_MEM_LEN)

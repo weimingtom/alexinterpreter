@@ -34,7 +34,7 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p);
 int vm_addr(vm_env* vm_p, alex_inst* a_i_p);
 int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 
-
+// 
 #define vm_get_var_l(vm_p, addr)		(	\
 											((addr)>=0 && ( ((vm_p)->local_top+(addr)) < (vm_p)->local_ptr.data_len))?	\
 											(&((vm_p)->local_ptr.root_ptr[(vm_p)->local_top+(addr)])):	\
@@ -62,8 +62,10 @@ int vm_s_b(vm_env* vm_p, alex_inst* a_i, byte tt);
 												)  \
 											)	\
 										) 
+// 
+// #define vm_get_var(vm_p, gl, addr)	 ( &( (*(vm_p->glr[gl]))->rppt_ptr ) )
 
-// vm cpu
+// vm 
 int alex_vm(vm_env* vm_p)
 {
 	
@@ -223,19 +225,23 @@ int vm_moveal(vm_env* vm_p, alex_inst* a_i_p)
 	
 	r_value* al_l_p = NULL; 
 
-	check_at_value(al_inx=pop_data(&vm_p->data_ptr), sym_type_num);
+	al_inx=pop_data(&vm_p->data_ptr);
+	al=pop_data(&vm_p->data_ptr);
 	check_value(al_r_v=top_data(&vm_p->data_ptr));
 	
+	if(al_inx->r_t != sym_type_num)		// index
+	{
+		print("vim[error line: %d], index is not number!\n", a_i_p->line);
+		return VM_ERROR_AL;
+	}
 
-	check_value(al = vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
-	
-	if(al->r_t != sym_type_al)
+	if(al->r_t != sym_type_al)		// arraylist
 	{
 		print("vm[error line: %d], not al!\n", a_i_p->line);
 		return VM_ERROR_AL;
 	}
 	
-	if( (al_l_p=get_al(al->r_v.al, (int)al_inx->r_v.num))==NULL )
+	if( (al_l_p=get_al(al->r_v.al, (int)al_inx->r_v.num))==NULL )		// value
 	{
 		print("vm[error line: %d], error al index[%d]!", a_i_p->line, (int)al_inx->r_v.num);
 		return VM_ERROR_AL;
@@ -256,31 +262,28 @@ int vm_al(vm_env* vm_p, alex_inst* a_i_p)
 	r_value* at_al = NULL;
 	r_value* r_index = NULL;
 	r_value* al = NULL;
-	check_value(r_index=pop_data(&vm_p->data_ptr));
-	
-	if(r_index->r_t != sym_type_num)
-	{
-		print("vm[error line: %d] the al index is not number!\n", a_i_p->line);
-		return VM_ERROR_AL;
-	}
-
-  
-	check_value(al=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
+	r_index=pop_data(&vm_p->data_ptr);
+	al = pop_data(&vm_p->data_ptr);		// arraylist
 
 	if(al->r_t != sym_type_al)
 	{
 		print("vm[error line: %d] the ide is not al!\n", a_i_p->line);
 		return VM_ERROR_AL;
 	}
+
+	if(r_index->r_t != sym_type_num)	// index
+	{
+		print("vm[error line: %d] the al index is not number!\n", a_i_p->line);
+		return VM_ERROR_AL;
+	}
 	
-	if( (at_al=get_al(al->r_v.al, (int)r_index->r_v.num))==NULL )
+	if( (at_al=get_al(al->r_v.al, (int)r_index->r_v.num))==NULL )	// value
 	{
 		print("vm[error line: %d] not find al index!\n", a_i_p->line);
 		return VM_ERROR_AL;
 	}
 	
 	push_data(&vm_p->data_ptr, *at_al);
-
 	return VM_SUCCESS;
 }
 
@@ -696,6 +699,9 @@ vm_env* com_to_vm(com_env* com_p)
 
 	alex_vm_env.local_top = 0;
 	alex_vm_env.pc = com_p->pc;
+	alex_vm_env.glr[COM_LOCAL] = &(alex_vm_env.local_ptr.root_ptr);
+	alex_vm_env.glr[COM_GLOBAL] = &(alex_vm_env.global_ptr.root_ptr);
+	alex_vm_env.glr[COM_REG]  = &(&(alex_vm_env.reg[0]));
 
 	return &alex_vm_env;
 }
