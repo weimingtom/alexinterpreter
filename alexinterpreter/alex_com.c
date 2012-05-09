@@ -283,6 +283,7 @@ int com_return(com_env* com_p, tree_node* t_n)
 	else
 	{
 		t_n = t_n->childs_p[0];
+	//	push_inst(&com_p->com_inst, new_inst(POP));	// 弹出function
 		check_com(com_exp(com_p, t_n));
 		push_inst(&com_p->com_inst, new_inst(RET));
 	}
@@ -296,6 +297,7 @@ int com_return_assume(com_env* com_p, tree_node* t_n)
 {
 	r_value r_v = new_number(0);
 
+//	push_inst(&com_p->com_inst, new_inst(POP));	// 弹出function
 	push_inst(&com_p->com_inst, new_inst(PUSH, r_v));
 	push_inst(&com_p->com_inst, new_inst(RET));
 	
@@ -417,19 +419,42 @@ int com_while(com_env* com_p, tree_node* t_n)
 
 int com_func_call(com_env* com_p, tree_node* t_n)
 {
-	r_addr r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
-	st* ret_st = NULL;
-	if(r_a.gl == COM_ERROR)
+	tree_node* l_t_n = t_n->childs_p[0];
+	tree_node* r_t_n = t_n->childs_p[1];
+
+	// 编译函数参数
+	check_com(com_arg(com_p, r_t_n));
+
+	// 编译函数名
+	switch(l_t_n->b_t)
 	{
-		print("com[error line :%d] the func %s is not find!\n", t_n->line, t_n->b_v.name.s_ptr);
-		return COM_ERROR_NOT_FIND_IDE;
+	case bnf_type_var:
+		{
+			r_addr r_a = search_addr(com_p, l_t_n->b_v.name.s_ptr);
+			if(r_a.gl == COM_ERROR)
+			{
+				print("com[error line :%d] the func %s is not find!\n", t_n->line, t_n->b_v.name.s_ptr);
+				return COM_ERROR_NOT_FIND_IDE;
+			}
+			push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+		}
+		break;
+	case bnf_type_funccall:
+		{
+			check_com(com_func_call(com_p, l_t_n));
+		}
+		break;
+	case bnf_type_al:
+		{
+			check_com(com_al(com_p, l_t_n, COM_VALUE));
+		}
+		break;
 	}
-	else
-	{
-		ret_st = look_com(com_p, t_n->b_v.name.s_ptr);
-		check_com(com_arg(com_p, t_n));	
-		push_inst(&com_p->com_inst, new_inst(CALL, r_a.gl, r_a.addr));
-	}
+	push_inst(&com_p->com_inst, new_inst(MOVEREG, new_addr(REG_FX)));
+	push_inst(&com_p->com_inst, new_inst(POP));
+
+	// 调用
+	push_inst(&com_p->com_inst, new_inst(CALL));
 	
 	return COM_SUCCESS;
 }
@@ -437,7 +462,8 @@ int com_func_call(com_env* com_p, tree_node* t_n)
 
 int com_arg(com_env* com_p, tree_node* t_n)
 {
-	t_n = t_n->childs_p[0];
+	if(t_n==NULL)
+		return COM_SUCCESS;
 
 	while(t_n)
 	{
@@ -715,41 +741,52 @@ int com_exp_stmt(com_env* com_p, tree_node* t_n)
 
 
 int com_al(com_env* com_p, tree_node* t_n, ubyte v_p)
-{
-	tree_node* exp = NULL;
-	r_addr r_a = search_addr(com_p, t_n->b_v.name.s_ptr);
-	// check al is true
-	if(r_a.gl== COM_ERROR)
+{ 
+	tree_node* l_t_n = t_n->childs_p[0];
+	tree_node* r_t_n = t_n->childs_p[1];
+
+	switch(l_t_n->b_t)
 	{
-		print("com[error line: %d] not find arraylist \"%s\"!\n", t_n->line, t_n->b_v.name.s_ptr);
-		return COM_ERROR_NOT_FIND_IDE;
-	}
-	
-	// check al inx
-	if(t_n->childs_p[0]==NULL)
-	{
-		print("com[error line: %d] not find arraglist \"%s\" index [?]!\n", t_n->line, t_n->b_v.name.s_ptr);
-		return COM_ERROR_NOT_AL_INX;
+	case bnf_type_var:		// arraylist name
+		{
+			r_addr r_a = search_addr(com_p, l_t_n->b_v.name.s_ptr);
+			// check al is true
+			if(r_a.gl== COM_ERROR)
+			{
+				print("com[error line: %d] not find arraylist \"%s\"!\n", t_n->line, t_n->b_v.name.s_ptr);
+				return COM_ERROR_NOT_FIND_IDE;
+			}
+			
+			// check al inx
+			if(r_t_n==NULL)
+			{
+				print("com[error line: %d] not find arraglist \"%s\" index [?]!\n", t_n->line, t_n->b_v.name.s_ptr);
+				return COM_ERROR_NOT_AL_INX;
+			}
+
+			push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
+		}
+		break;
+	case bnf_type_al:
+		{
+			check_com(com_al(com_p, l_t_n, COM_VALUE));
+		}
+		break;
+	case  bnf_type_funccall:
+		{
+			check_com(com_func_call(com_p, l_t_n));
+		}
+		break;
 	}
 
-	exp = t_n->childs_p[0];
-	push_inst(&com_p->com_inst, new_inst(PUSHVAR, r_a.gl, r_a.addr));
-	
-	while(exp->next)
-	{
-		check_com(com_exp(com_p, exp));
-		push_inst(&com_p->com_inst, new_inst(AL));
-		exp = exp->next;
-	}
-
-	check_com(com_exp(com_p, exp));
+	check_com(com_exp(com_p, r_t_n));
 	if(v_p==COM_VALUE)
 		push_inst(&com_p->com_inst, new_inst(AL));
 	else if(v_p==COM_POINT)
 		push_inst(&com_p->com_inst, new_inst(MOVEAL));
 	else
 		return COM_ERROR_OTHER;
-
+		
 	return COM_SUCCESS;
 }
 
@@ -938,7 +975,6 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 	a_i.inst_type = e_i;
 	switch(a_i.inst_type)
 	{
-	case CALL:
 	case MOVE:
 	case PUSHVAR:
 	case SADD:

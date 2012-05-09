@@ -712,6 +712,55 @@ tree_node* syn_term_exp(token_list* t_lt)
 	return rt_n;
 }
 
+// 变量语法树
+tree_node* syn_getvar_exp(token_list* t_lt)
+{
+	tree_node* rt_n = NULL;
+	token* n_t = at_token(t_lt);
+	rt_n = new_tree_node(get_line(t_lt), bnf_type_var);
+	rt_n->b_v.name = alex_string(n_t->token_name.s_ptr);
+	next_token(t_lt);
+
+	return rt_n;
+}
+
+// []()[][][]();
+tree_node* syn_funcal_exp(token_list* t_lt)
+{
+	// 获得变量
+	tree_node* rt_n = syn_getvar_exp(t_lt);
+
+	while( type_token(t_lt)== token_type_lbra || 
+		   type_token(t_lt) == token_type_lal
+		 )
+	{
+		switch(type_token(t_lt))		// if token=='(' func call
+		{
+		case token_type_lbra:
+			{
+				tree_node* call = syn_func_call(t_lt);
+				if(call==NULL)	goto FUNCAL_ERROR;
+				call->childs_p[0] = rt_n;
+				rt_n = call;
+			}
+			break;
+		case token_type_lal:			// arraylist
+			{
+				tree_node* al = syn_at_al(t_lt);
+				if(al==NULL)	goto FUNCAL_ERROR;
+				al->childs_p[0] = rt_n;
+				rt_n = al;
+			}
+			break;
+		}
+	}
+
+	return rt_n;
+
+FUNCAL_ERROR:
+	free_tree(rt_n);
+	return NULL;
+}
 
 // ( const value  var value
 tree_node* syn_factor_exp(token_list* t_lt)
@@ -739,22 +788,15 @@ tree_node* syn_factor_exp(token_list* t_lt)
 		{
 			switch(look_token(t_lt))		// if token=='(' func call
 			{
-			case token_type_lbra:
-				{
-					rt_n = syn_func_call(t_lt);	
-				}
-				break;
+			case token_type_lbra:			// func call
 			case token_type_lal:			// arraylist
 				{
-					rt_n = syn_at_al(t_lt);
+					rt_n = syn_funcal_exp(t_lt);
 				}
 				break;
 			default:										// var 
 				{				
-					token* n_t = at_token(t_lt);
-					rt_n = new_tree_node(get_line(t_lt), bnf_type_var);
-					rt_n->b_v.name = alex_string(n_t->token_name.s_ptr);
-					next_token(t_lt);
+					rt_n = syn_getvar_exp(t_lt);
 				}
 				break;
 			}
@@ -851,24 +893,17 @@ tree_node* syn_al_def(token_list* t_lt)
 }
 
 
-// arraylist al[EXP][EXP]...
+// arraylist al[EXP]
 tree_node* syn_at_al(token_list* t_lt)
 {
 	tree_node* rt_n = new_tree_node(get_line(t_lt), bnf_type_al);
-	tree_node** nrt_n = &(rt_n->childs_p[0]);
+	tree_node** nrt_n = &(rt_n->childs_p[1]);
 	token* n_t = at_token(t_lt);
-	rt_n->b_v.name = alex_string(n_t->token_name.s_ptr);
 
-	syn_watch(t_lt, token_type_ide);
-
-	do 
-	{
-		syn_watch(t_lt, token_type_lal);
-		*nrt_n = syn_exp_def(t_lt);
-		nrt_n = &((*nrt_n)->next);
-		syn_watch(t_lt, token_type_ral);
-	} while (type_token(t_lt)== token_type_lal);
-
+	syn_watch(t_lt, token_type_lal);
+	*nrt_n = syn_exp_def(t_lt);
+	nrt_n = &((*nrt_n)->next);
+	syn_watch(t_lt, token_type_ral);
 	return rt_n;
 }
 
@@ -877,11 +912,8 @@ tree_node* syn_at_al(token_list* t_lt)
 tree_node* syn_func_call(token_list* t_lt)
 {
 	tree_node* rt_n = new_tree_node(get_line(t_lt), bnf_type_funccall);
-	tree_node** nrt_n = &(rt_n->childs_p[0]);
-	token* n_t = at_token(t_lt);
-	rt_n->b_v.name = alex_string(n_t->token_name.s_ptr);
+	tree_node** nrt_n = &(rt_n->childs_p[1]);
 
-	syn_watch(t_lt, token_type_ide);
 	syn_watch(t_lt, token_type_lbra);
 	
 	while(type_token(t_lt) != token_type_rbra) 
