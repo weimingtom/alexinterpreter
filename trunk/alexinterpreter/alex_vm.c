@@ -341,14 +341,8 @@ int vm_movereg(vm_env* vm_p, alex_inst* a_i_p)
 {
 	r_value* r_v = NULL;
 	check_value(r_v = top_data(&vm_p->data_ptr));
-	if(a_i_p->gl != COM_REG || a_i_p->inst_value.r_t != sym_type_addr || a_i_p->inst_value.r_v.addr <0 || a_i_p->inst_value.r_v.addr >=REG_LEN)
-	{
-		print("vm[error line: %d] is not reg!\n", a_i_p->line);
-		return VM_ERROR;
-	}
-
+	
 	vm_p->reg[a_i_p->inst_value.r_v.addr] = *r_v;
-
 	return VM_SUCCESS;
 }
 
@@ -551,12 +545,10 @@ int vm_set_var(vm_env* vm_p, e_gl gl, int addr, r_value* r_v)
 
 int vm_call(vm_env* vm_p, alex_inst* a_i_p)
 {
-	r_value* r_v = NULL;
 	next_pc(vm_p);
-	
+
 	// get jump addr
-	check_value(r_v=vm_get_var(vm_p, a_i_p->gl, a_i_p->inst_value.r_v.addr));
-	check_vm(vm_p_call(vm_p, r_v));
+	check_vm(vm_p_call(vm_p, &vm_p->reg[REG_FX]));
 
 	return VM_SUCCESS;
 }
@@ -565,6 +557,7 @@ int vm_p_call(vm_env* vm_p, r_value* r_v_p)
 {
 	if(r_v_p==NULL || vm_p==NULL)
 	{
+		print("vm[error] you try not function!\n");
 		return VM_ERROR;
 	}
 	else if(r_v_p->r_t == sym_type_addr)		// alex func
