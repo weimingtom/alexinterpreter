@@ -44,7 +44,7 @@ char* com_str[] = {
 	"MOVE",		
 	"MOVEAL",		
 	"MOVEREG",	
-	"TABLE",		
+	"MOVEARG",		
 	"ADD",	
 	"SUB",	
 	"MUL",		
@@ -81,7 +81,7 @@ int com_if(com_env* com_p, tree_node* t_n);
 int com_while(com_env* com_p, tree_node* t_n);
 int com_exp_stmt(com_env* com_p, tree_node* t_n);
 int com_exp(com_env* com_p, tree_node* t_n);
-int com_arg(com_env* com_p, tree_node* t_n);
+int com_arg(com_env* com_p, tree_node* t_n, int* args);
 int com_ass(com_env* com_p, tree_node* t_n);
 int	com_op_logic(com_env* com_p, tree_node* t_n);
 int com_op_value(com_env* com_p, tree_node* t_n);
@@ -207,7 +207,7 @@ int com_func_def(com_env* com_p, tree_node* t_n)
 
 int com_arg_def(com_env* com_p, tree_node* t_n)
 {
-	int i;
+	int arg_defs=0;
 	int arg_num = (int)t_n->b_v.number;
 	t_n = t_n->childs_p[0];
 
@@ -217,14 +217,17 @@ int com_arg_def(com_env* com_p, tree_node* t_n)
 		l_com_addr(com_p, t_n->b_v.name.s_ptr);
 		push_inst(&com_p->com_inst, new_inst(VAR));
 		t_n = t_n->next;
+		arg_defs++;
 	}
 	
 	// push inst  get arg 
-	for(i=arg_num-1; i>=0; i--)
-	{
-		push_inst(&com_p->com_inst, new_inst(MOVE, COM_LOCAL, i));
-		push_inst(&com_p->com_inst, new_inst(POP));
-	}
+	push_inst(&com_p->com_inst, new_inst(MOVEARG, arg_defs));
+
+// 	for(i=arg_num-1; i>=0; i--)
+// 	{
+// 		push_inst(&com_p->com_inst, new_inst(MOVE, COM_LOCAL, i));
+// 		push_inst(&com_p->com_inst, new_inst(POP));
+// 	}
 
 	return COM_SUCCESS;
 }
@@ -419,11 +422,12 @@ int com_while(com_env* com_p, tree_node* t_n)
 
 int com_func_call(com_env* com_p, tree_node* t_n)
 {
+	int args;
 	tree_node* l_t_n = t_n->childs_p[0];
 	tree_node* r_t_n = t_n->childs_p[1];
 
 	// 编译函数参数
-	check_com(com_arg(com_p, r_t_n));
+	check_com(com_arg(com_p, r_t_n, &args));
 
 	// 编译函数名
 	switch(l_t_n->b_t)
@@ -453,15 +457,16 @@ int com_func_call(com_env* com_p, tree_node* t_n)
 	push_inst(&com_p->com_inst, new_inst(MOVEREG, new_addr(REG_FX)));
 	push_inst(&com_p->com_inst, new_inst(POP));
 
-	// 调用
-	push_inst(&com_p->com_inst, new_inst(CALL));
+	// 调用函数 args为参数个数
+	push_inst(&com_p->com_inst, new_inst(CALL, args));
 	
 	return COM_SUCCESS;
 }
 
 
-int com_arg(com_env* com_p, tree_node* t_n)
+int com_arg(com_env* com_p, tree_node* t_n, int* args)
 {
+	*args = 0;
 	if(t_n==NULL)
 		return COM_SUCCESS;
 
@@ -469,6 +474,7 @@ int com_arg(com_env* com_p, tree_node* t_n)
 	{
 		check_com(com_exp(com_p, t_n));
 		t_n = t_n->next;
+		(*args)++;
 	}
 
 	return COM_SUCCESS;
@@ -987,6 +993,8 @@ alex_inst new_inst(e_alex_inst e_i, ...)
 			a_i.inst_value.r_t = sym_type_addr;				// set type
 		}	
 		break;
+	case MOVEARG:
+	case CALL:
 	case NEWAL:
 		{
 			a_i.inst_value.r_v.num = (ALEX_NUMBER)va_arg(arg_list, int);
@@ -1085,10 +1093,6 @@ int com_print_inst_value(alex_inst a_i, int pc)
 			return COM_SUCCESS;
 		}
 		break;
-	case sym_type_arg_num:
-		print(" %10d	", a_i.inst_value.r_v.arg_num);
-		break;
-	
 	case sym_type_error:
 		break;
 
