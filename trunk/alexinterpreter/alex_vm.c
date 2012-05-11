@@ -676,8 +676,8 @@ int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 	r_value* l_r_v =NULL;
 	r_value* r_r_v =NULL;
 
-	check_value(r_r_v=pop_data(&vm_p->data_ptr));
-	check_value(l_r_v=pop_data(&vm_p->data_ptr));
+	(r_r_v=pop_data(&vm_p->data_ptr));
+	(l_r_v=pop_data(&vm_p->data_ptr));
 
 	if(l_r_v->r_t != sym_type_num || r_r_v->r_t != sym_type_num)
 	{
@@ -706,22 +706,22 @@ int vm_tp(vm_env* vm_p, alex_inst* a_i_p)
 		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) || (int)(r_r_v->r_v.num))?(1):(0)));
 		break;
 	case BIG:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) > (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) > (r_r_v->r_v.num))?(1):(0)));
 		break;
 	case BIGE:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) >= (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) >= (r_r_v->r_v.num))?(1):(0)));
 		break;
 	case LIT:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) < (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) < (r_r_v->r_v.num))?(1):(0)));
 		break;
 	case LITE:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) <= (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) <= (r_r_v->r_v.num))?(1):(0)));
 		break;
 	case EQU:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) == (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) == (r_r_v->r_v.num))?(1):(0)));
 		break;
 	case NEQU:
-		push_data(&vm_p->data_ptr, new_number(((int)(l_r_v->r_v.num) != (int)(r_r_v->r_v.num))?(1):(0)));
+		push_data(&vm_p->data_ptr, new_number(((l_r_v->r_v.num) != (r_r_v->r_v.num))?(1):(0)));
 		break;
 	default:
 		print("vm[error line: %d] not op inst!\n", a_i_p->line);

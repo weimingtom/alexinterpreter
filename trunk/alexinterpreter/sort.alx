@@ -36,7 +36,6 @@ function sort(var al)
 		{
 			if(al[max_index]>al[j])
 				max_index = j;
-				
 			j++;
 		}
 		

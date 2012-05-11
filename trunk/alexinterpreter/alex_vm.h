@@ -112,6 +112,11 @@ typedef struct _d_data
 	int data_base;			// 当前的栈底
 }d_data;
 
+typedef struct _d_stack{
+	r_value** root_ptr;		// 数据操作堆栈跟指针
+}d_stack;
+
+
 typedef struct _vm_env
 {
 	c_inst		code_ptr;		// 代码段指针				
@@ -142,8 +147,8 @@ typedef struct _vm_env
 
 //#define pop_data		_pop_data
 //#define pop_data(dp)	((dp)->root_ptr[(--((dp)->data_len))])
-#define pop_data(dp)		( ((dp)==NULL || ((dp)->data_len - (dp)->data_base)<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), &error_v):(&((dp)->root_ptr[(--(dp)->data_len)]))  )
-#define top_data(dp)		( ((dp)==NULL || ((dp)->data_len-(dp)->data_base)<=0)?(&error_v):(&((dp)->root_ptr[(dp)->data_len-1])) )
+#define pop_data(dp)		( ( ((dp)->data_len - (dp)->data_base)<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), &error_v):(&((dp)->root_ptr[(--(dp)->data_len)]))  )
+#define top_data(dp)		( ( ((dp)->data_len-(dp)->data_base)<=0)?(&error_v):(&((dp)->root_ptr[(dp)->data_len-1])) )
 #define push_data(dp, r)	do{if(dp) {relloc_data((dp), DATA_MEM_LEN);(dp)->root_ptr[(dp)->data_len++] = (r);} }while(0)
 //#define push_data 	_push_data
 
