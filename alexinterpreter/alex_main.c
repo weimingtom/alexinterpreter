@@ -60,9 +60,9 @@ int main(int arg, char* arg_list[])
 {
 	alex_init();
 	alex_run(arg_list[1]);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	alex_run("sort.alx");
-#endif
+//#endif
 
 	alex_free();
 #ifdef _DEBUG
