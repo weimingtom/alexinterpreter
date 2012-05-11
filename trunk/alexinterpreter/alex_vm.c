@@ -25,6 +25,7 @@ int vm_jfalse(vm_env* vm_p, alex_inst* a_i_p);
 int vm_jtrue(vm_env* vm_p, alex_inst* a_i_p);
 int vm_move(vm_env* vm_p, alex_inst* a_i_p);
 int vm_movereg(vm_env* vm_p, alex_inst* a_i_p);
+int vm_movearg(vm_env* vm_p, alex_inst* a_i_p);
 int vm_call(vm_env* vm_p, alex_inst* a_i_p);
 int vm_jump(vm_env* vm_p, alex_inst* a_i_p);
 int vm_ret(vm_env* vm_p);
@@ -128,7 +129,8 @@ int alex_vm(vm_env* vm_p)
 		case MOVEREG:
 			check_vm(vm_movereg(vm_p, a_i_p));
 			break;
-		case TABLE:		// ?
+		case MOVEARG:
+			check_vm(vm_movearg(vm_p, a_i_p));
 			break;
 
 		case SADD:
@@ -346,6 +348,24 @@ int vm_movereg(vm_env* vm_p, alex_inst* a_i_p)
 	return VM_SUCCESS;
 }
 
+int vm_movearg(vm_env* vm_p, alex_inst* a_i_p)
+{
+	int i;
+	int args = vm_p->data_ptr.data_len - vm_p->data_ptr.data_base;
+	int arg_defs = (int)a_i_p->inst_value.r_v.num;
+	int arg_mins = (arg_defs>args)?(args):(arg_defs);
+
+	// move args
+	for(i=0; i<arg_mins; i++)
+	{
+		vm_set_var(vm_p, COM_LOCAL, i, 
+			&(vm_p->data_ptr.root_ptr[vm_p->data_ptr.data_base+i]));
+	}
+
+	vm_p->data_ptr.data_len = vm_p->data_ptr.data_base;
+	return VM_SUCCESS;
+}
+
 int vm_jfalse(vm_env* vm_p, alex_inst* a_i_p)
 {
 	r_value* bool_v = NULL;
@@ -427,7 +447,7 @@ int vm_add(vm_env* vm_p)
 					r_value r_v = {0};
 					char t_num[256] = {0};
 					a_string a_s = alex_string(l_r_v->r_v.str.s_ptr);
-					gcvt(r_r_v->r_v.num, 10, t_num);
+					sprintf(t_num, "%.14g", r_r_v->r_v.num);
 					cat_string(&a_s, t_num);
 					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
 					free_string(&a_s);
@@ -448,7 +468,7 @@ int vm_add(vm_env* vm_p)
 				{
 					r_value r_v = {0};
 					char t_num[256]={0};
-					a_string a_s = alex_string(gcvt(l_r_v->r_v.num, 10, t_num));
+					a_string a_s = alex_string( (sprintf(t_num, "%.14g", l_r_v->r_v.num), t_num) );
 					cat_string(&a_s, r_r_v->r_v.str.s_ptr);
 					r_v = gc_new_string(a_s.s_ptr, GC_LIVE);
 					free_string(&a_s);
@@ -548,12 +568,12 @@ int vm_call(vm_env* vm_p, alex_inst* a_i_p)
 	next_pc(vm_p);
 
 	// get jump addr
-	check_vm(vm_p_call(vm_p, &vm_p->reg[REG_FX]));
+	check_vm(vm_p_call(vm_p, &vm_p->reg[REG_FX], (int)(a_i_p->inst_value.r_v.num)));
 
 	return VM_SUCCESS;
 }
 
-int vm_p_call(vm_env* vm_p, r_value* r_v_p)
+int vm_p_call(vm_env* vm_p, r_value* r_v_p, int args)
 {
 	if(r_v_p==NULL || vm_p==NULL)
 	{
@@ -569,21 +589,48 @@ int vm_p_call(vm_env* vm_p, r_value* r_v_p)
 		// record local top
 		push_call(vm_p, new_addr(vm_p->local_top));
 		
+		// record  data base
+		push_call(vm_p, new_addr(vm_p->data_ptr.data_base));
+
+		// reset local data
 		vm_p->local_top = vm_p->local_ptr.data_len;
+		// reset data base
+		vm_p->data_ptr.data_base = vm_p->data_ptr.data_len - args;
 	}
 	else if(r_v_p->r_t == sym_type_reg_func)		// reg func
 	{
+		r_value r_ret = {0};
 		vm_func func_p = (vm_func)r_v_p->r_v.func;	
-		int ret = func_p(vm_p);
+		int ret;
+		
+		// record call
+		int base = vm_p->data_ptr.data_base;
+		vm_p->data_ptr.data_base = vm_p->data_ptr.data_len-args;
+		
+		// call
+		ret = func_p(vm_p);
+
 		if(ret==0)
 		{
-			push_data(&vm_p->data_ptr, new_number(0));
+			r_ret = new_number(0);
 		}
 		else if(ret != 1)
 		{
 			print("vm[error] reg func return is error ! ret= %d is error!", ret);
 			return VM_ERROR_REG_FUNC;
 		}
+		else
+		{
+			r_ret = *(top_data(&vm_p->data_ptr));
+			check_value(&r_ret);
+		}
+
+		// reset call
+		vm_p->data_ptr.data_len = vm_p->data_ptr.data_base;
+		vm_p->data_ptr.data_base = base;
+
+		// return
+		push_data(&vm_p->data_ptr, r_ret);
 	}
 	else
 	{
@@ -599,10 +646,15 @@ int vm_ret(vm_env* vm_p)
 	int i=0, len =0;
 	r_value* pc_value = NULL;
 	r_value* local_top_value = NULL;
+	r_value* data_base = NULL;
 
+	check_value(data_base=pop_data(&vm_p->call_ptr) );
 	check_value(local_top_value=pop_data(&vm_p->call_ptr));
 	check_value(pc_value=pop_data(&vm_p->call_ptr));
+	
 
+	// resume data base
+	vm_p->data_ptr.data_base = data_base->r_v.addr;
 	// resume pc
 	vm_p->pc = pc_value->r_v.addr;
 	len = vm_p->local_ptr.data_len;

@@ -1,18 +1,16 @@
 
-function func2()
+function func(var a, var b, var c)
 {
-	return "func2";
-}
-
-function func()
-{
-	return [11, 22, ["test", func2] ];
+	return [4, 5, 6, 7];
 }
 
 function main()
 {
-	var al = [1, 2, func];
-	print( al[2]()[2][1]() );
+	var al = [1, 2, 3, [22, 33, 44]];
+
+	var temp = func();
+	temp[2] = 9999;
+	print(temp);
 }
 
 main();

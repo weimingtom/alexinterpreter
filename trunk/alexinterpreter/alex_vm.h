@@ -62,7 +62,7 @@ typedef enum _inst
 	MOVE,							// 将栈顶的数据写入变量中
 	MOVEAL,							// 将栈顶的数据写入数组组员中
 	MOVEREG,						// 将栈顶的数据写入寄存器中
-	TABLE,							// 
+	MOVEARG,						// 填充参数 
 	ADD,							// +
 	SUB,							// -
 	MUL,							// *
@@ -109,6 +109,7 @@ typedef struct _d_data
 	r_value* root_ptr;		// 数据堆栈段根指针
 	int data_len;			// 已经使用的数据堆栈段长度
 	int data_size;			// 当前总共的数据堆栈段长度
+	int data_base;			// 当前的栈底
 }d_data;
 
 typedef struct _vm_env
@@ -119,7 +120,7 @@ typedef struct _vm_env
 	r_value		reg[REG_LEN];// 寄存器
 	r_value*	reg_p;
 	d_data		data_ptr;	// 数据堆栈段指针
-	int			top;		// 数据段堆栈指针		
+	int			top;		// 数据段堆栈指针
 
 	d_data		local_ptr;	//局部变量堆栈
 	int			local_top;	//局部变量堆栈指针
@@ -141,8 +142,8 @@ typedef struct _vm_env
 
 //#define pop_data		_pop_data
 //#define pop_data(dp)	((dp)->root_ptr[(--((dp)->data_len))])
-#define pop_data(dp)		( ((dp)==NULL || (dp)->data_len<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), &error_v):(&((dp)->root_ptr[(--(dp)->data_len)]))  )
-#define top_data(dp)		( ((dp)==NULL || (dp)->data_len<=0)?(&error_v):(&((dp)->root_ptr[(dp)->data_len-1])) )
+#define pop_data(dp)		( ((dp)==NULL || ((dp)->data_len - (dp)->data_base)<=0)?(print("pop[error: ]you are try a nil data at stack!\n"), &error_v):(&((dp)->root_ptr[(--(dp)->data_len)]))  )
+#define top_data(dp)		( ((dp)==NULL || ((dp)->data_len-(dp)->data_base)<=0)?(&error_v):(&((dp)->root_ptr[(dp)->data_len-1])) )
 #define push_data(dp, r)	do{if(dp) {relloc_data((dp), DATA_MEM_LEN);(dp)->root_ptr[(dp)->data_len++] = (r);} }while(0)
 //#define push_data 	_push_data
 
@@ -174,7 +175,7 @@ int push_global(vm_env* vm_p, r_value r_v);
 r_value _pop_data(d_data* d_ptr);
 void _push_data(d_data* d_ptr, r_value r_v);
 
-int vm_p_call(vm_env* vm_p, r_value* r_v_p);
+int vm_p_call(vm_env* vm_p, r_value* r_v_p, int args);
 int alex_vm(vm_env* vm_p);
 void vm_print(vm_env* vm_p);
 

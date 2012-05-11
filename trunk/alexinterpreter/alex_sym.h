@@ -36,8 +36,7 @@ typedef union _s_value{
 	ALEX_FUNC	func;
 	alex_al*	al; 
 	ALEX_P		ptr;
-	int			addr;
-	int			arg_num;		
+	int			addr;		
 }s_value;
 
 
